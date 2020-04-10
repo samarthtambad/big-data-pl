@@ -1,0 +1,5 @@
+wget "http://ghtorrent-downloads.ewi.tudelft.nl/mysql/mysql-2019-06-01.tar.gz"
+
+tar -xzf mysql-2019-06-01.tar.gz
+
+hdfs dfs -put /scratch/svt258/project/mysql-2019-06-01 project/data/raw/
