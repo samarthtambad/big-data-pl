@@ -39,7 +39,7 @@ It is available as a tar.gz file. Extract it using ```tar -xzf filename.tar.gz``
 Perform Extract, Transform and Load (ETL) step where data from multiple sources are extracted into the staging area (HDFS in this case). Then transformed to a suitable format by removing unwanted/duplicate rows, correcting data format, combining data from multiple tables into one table, etc. Finally load the data back into the staging area for further processing.
 
 ## Data Processing
-
+Apply algorithms on the data to derive insights.
 
 ## Data Storage
-
+Store the data into a database that can be queried for visualisation
