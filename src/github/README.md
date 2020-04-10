@@ -35,6 +35,9 @@ mysql-dump-github
 
 It is available as a tar.gz file. Extract it using ```tar -xzf filename.tar.gz```. Move it to hdfs to be processed using Spark.
 
+#### Schema
+![schema.png](https://ghtorrent.org/files/schema.png)
+
 ## Data Preparation
 Perform Extract, Transform and Load (ETL) step where data from multiple sources are extracted into the staging area (HDFS in this case). Then transformed to a suitable format by removing unwanted/duplicate rows, correcting data format, combining data from multiple tables into one table, etc. Finally load the data back into the staging area for further processing.
 
@@ -42,4 +45,4 @@ Perform Extract, Transform and Load (ETL) step where data from multiple sources 
 Apply algorithms on the data to derive insights.
 
 ## Data Storage
-Store the data into a database that can be queried for visualisation
+Store the data into a database that can be queried for visualisation.
