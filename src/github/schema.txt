@@ -1,0 +1,25 @@
+
+Schema
+
+The list of field names selected for the analytic is given below:
+
+1. programming_language - String
+    programming language among all possible languages whose files are stored in Github
+
+2. num_users - Int
+    For a given language, the number of users who have ever committed/sent pull num_pull_requests
+    to projects which use that language.
+
+3. num_repos - Int
+    For a given language, the number of repositories using that language.
+
+4. num_commits - Int
+    For a given language, the total number of commits made to repositories using that language.
+
+5. num_pull_requests - Int
+    For a given language, the total number of pull requests submitted to repositories using that language.
+
+6. num_pending_issues - Int
+    For a given language, the number of pending issues in projects using that language.
+
+Each of the above fields are calculated separately for each year between 2012 and 2020.
