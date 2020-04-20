@@ -51,6 +51,19 @@ val pullRequestsSchema = StructType(Array(
     StructField("intra_branch", ShortType, true)
 ))
 
+// val projectsSchema = StructType(Array(
+//     StructField("id", IntegerType, false),
+//     StructField("url", StringType, false),
+//     StructField("owner_id", IntegerType, false),
+//     StructField("name", StringType, false),
+//     StructField("descriptor", StringType, false),
+//     StructField("language", StringType, false),
+//     StructField("created_at", TimestampType, false),
+//     StructField("forked_from", IntegerType, false),
+//     StructField("deleted", ShortType, false),
+//     StructField("updated_at", TimestampType, false),
+// ))
+
 val projectLanguagesSchema = StructType(Array(
     StructField("project_id", IntegerType, false),
     StructField("language", StringType, false),
@@ -62,6 +75,7 @@ val projectLanguagesSchema = StructType(Array(
 val usersDF = spark.read.format("csv").schema(usersSchema).load(data_path + "users.csv")
 val commitsDF = spark.read.format("csv").schema(commitsSchema).load(data_path + "commits.csv")
 val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(data_path + "pull_requests.csv")
+// val projectsDF = spark.read.format("csv").schema(projectLanguagesSchema).load(data_path + "projects.csv")
 val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(data_path + "project_languages.csv")
 
 // initial count
@@ -75,6 +89,46 @@ val usersDF_clean = usersDF.drop("login").drop("name").drop("created_at").drop("
 val commitsDF_clean = commitsDF.drop("sha")
 val pullRequestsDF_clean = pullRequestsDF.drop("head_repo_id").drop("base_repo_id").drop("head_commit_id").drop("base_commit_id").drop("intra_branch")
 val projectLanguagesDF_clean = projectLanguagesDF.drop("bytes").drop("created_at")
+
+
+/*
+
+project_languages -> 
+
+do flatmap on (id, [languages]) and make tuple (id, language)
+
+
+
+
+
+
+
+
+
+*/
+
+val languages = projectLanguagesDF_clean.select("language").distinct()
+languages.collect().foreach(println)
+languages.count()
+// number of languages on Github = 386
+
+
+
+
+/*  Profiling project_languages.csv
+
+projectLanguagesDF_clean.select(countDistinct("project_id")).show()
+projectLanguagesDF_clean.select("language").distinct().show()
+
+total count = 138205530
+project_id -> 
+    unique count = 41659371
+
+languages ->
+
+*/
+
+
 
 // final count
 val users_count_post = usersDF_clean.count()
