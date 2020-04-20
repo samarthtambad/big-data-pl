@@ -12,6 +12,7 @@ The data is distributed among multiple csv files (one table per file). The relev
 */
 
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, TimestampType, ShortType, DoubleType}
+import org.apache.spark.sql.functions.lower
 
 // set path to data
 val data_path: String = "project/data/raw/data/"
@@ -51,18 +52,18 @@ val pullRequestsSchema = StructType(Array(
     StructField("intra_branch", ShortType, true)
 ))
 
-// val projectsSchema = StructType(Array(
-//     StructField("id", IntegerType, false),
-//     StructField("url", StringType, false),
-//     StructField("owner_id", IntegerType, false),
-//     StructField("name", StringType, false),
-//     StructField("descriptor", StringType, false),
-//     StructField("language", StringType, false),
-//     StructField("created_at", TimestampType, false),
-//     StructField("forked_from", IntegerType, false),
-//     StructField("deleted", ShortType, false),
-//     StructField("updated_at", TimestampType, false),
-// ))
+val projectsSchema = StructType(Array(
+    StructField("id", IntegerType, false),
+    StructField("url", StringType, false),
+    StructField("owner_id", IntegerType, false),
+    StructField("name", StringType, false),
+    StructField("descriptor", StringType, false),
+    StructField("language", StringType, false),
+    StructField("created_at", TimestampType, false),
+    StructField("forked_from", IntegerType, false),
+    StructField("deleted", ShortType, false),
+    StructField("updated_at", TimestampType, false)
+))
 
 val projectLanguagesSchema = StructType(Array(
     StructField("project_id", IntegerType, false),
@@ -75,7 +76,7 @@ val projectLanguagesSchema = StructType(Array(
 val usersDF = spark.read.format("csv").schema(usersSchema).load(data_path + "users.csv")
 val commitsDF = spark.read.format("csv").schema(commitsSchema).load(data_path + "commits.csv")
 val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(data_path + "pull_requests.csv")
-// val projectsDF = spark.read.format("csv").schema(projectLanguagesSchema).load(data_path + "projects.csv")
+val projectsDF = spark.read.format("csv").schema(projectsSchema).load(data_path + "projects.csv")
 val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(data_path + "project_languages.csv")
 
 // initial count
@@ -88,7 +89,27 @@ val project_languages_pre = projectLanguagesDF.count()
 val usersDF_clean = usersDF.drop("login").drop("name").drop("created_at").drop("type").drop("fake").drop("deleted").drop("long").drop("lat").drop("country_code").drop("company").drop("state").drop("city")
 val commitsDF_clean = commitsDF.drop("sha")
 val pullRequestsDF_clean = pullRequestsDF.drop("head_repo_id").drop("base_repo_id").drop("head_commit_id").drop("base_commit_id").drop("intra_branch")
+val projectsDF_clean = projectsDF.drop("url").drop("owner_id").drop("name").drop("descriptor").drop("forked_from").drop("deleted").drop("updated_at").na.drop("any")
 val projectLanguagesDF_clean = projectLanguagesDF.drop("bytes").drop("created_at")
+
+val projectsDF_clean_2 = projectsDF_clean.withColumn("language", lower(col("language")))
+projectsDF_clean_2.show()
+
+
+usersDF_clean.take(10).foreach(println)
+commitsDF_clean.take(10).foreach(println)
+pullRequestsDF_clean.take(10).foreach(println)
+projectsDF_clean.take(10).foreach(println)
+projectLanguagesDF_clean.take(10).foreach(println)
+
+
+val usersDF_cleaned = usersDF_clean.take(1000)
+val commitsDF_cleaned = commitsDF_clean.take(10000)
+val pullRequestsDF_cleaned = pullRequestsDF_clean.take(5000)
+val projectsDF_cleaned = projectsDF_clean.take(1000)
+val projectLanguagesDF_cleaned = projectLanguagesDF_clean.take(1000)
+
+
 
 
 /*
@@ -97,20 +118,22 @@ project_languages ->
 
 do flatmap on (id, [languages]) and make tuple (id, language)
 
-
-
-
-
-
-
-
-
 */
 
-val languages = projectLanguagesDF_clean.select("language").distinct()
-languages.collect().foreach(println)
-languages.count()
+
+
+val languagesDF = projectLanguagesDF_clean.select("language").distinct()
+languagesDF.collect().foreach(println)
+languagesDF.count()
 // number of languages on Github = 386
+languagesDF.coalesce(1).write.format("csv").mode("overwrite").save("project/data/cleaned/languages.csv")
+
+
+
+projectsDF_clean - 
+
+
+// project_id, list of languages
 
 
 
@@ -127,6 +150,9 @@ project_id ->
 languages ->
 
 */
+
+
+projectLanguagesDF_clean.join(commitsDF_clean, projectLanguagesDF_clean.col("project_id") ===commitsDF_clean.col("project_id")).take(10).show()
 
 
 
