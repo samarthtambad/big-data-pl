@@ -1,8 +1,9 @@
 
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, TimestampType, ShortType, DoubleType}
 
-// set path to data
-val data_path: String = "project/data/raw/data/"
+// set path to data, toggle small/big
+// val data_path: String = "project/data/raw/data/"
+val data_path: String = "project/data/test/"
 
 // define schema
 val usersSchema = StructType(Array(
@@ -66,4 +67,3 @@ val commitsDF = spark.read.format("csv").schema(commitsSchema).load(data_path + 
 val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(data_path + "pull_requests.csv")
 val projectsDF = spark.read.format("csv").schema(projectsSchema).load(data_path + "projects.csv")
 val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(data_path + "project_languages.csv")
-

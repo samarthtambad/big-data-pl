@@ -16,6 +16,7 @@ import org.apache.spark.sql.functions.lower
 
 // set path to data
 val data_path: String = "project/data/raw/data/"
+// val data_path: String = "project/data/test/"
 
 val usersSchema = StructType(Array(
     StructField("id", IntegerType, false),
