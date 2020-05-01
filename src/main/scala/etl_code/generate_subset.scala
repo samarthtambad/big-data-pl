@@ -1,22 +1,26 @@
-/*
-generate subset of data for testing
-*/
+package etl
 
-// set path to data
-val data_path_small: String = "project/data/test/"
+class SampleSubset(var path: String) {
+    /*
+    sample subset of data for testing
+    */
 
-// take subset
-val usersSmallDF = usersDF.limit(1000)
-usersSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "users.csv")
+    // set path to data
+    val data_path_small: String = "project/data/test/"
 
-val commitsSmallDF = commitsDF.limit(10000)
-commitsSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "commits.csv")
+    // take subset
+    val usersSmallDF = usersDF.limit(1000)
+    usersSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "users.csv")
 
-val pullRequestsSmallDF = pullRequestsDF.limit(10000)
-pullRequestsSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "pull_requests.csv")
+    val commitsSmallDF = commitsDF.limit(10000)
+    commitsSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "commits.csv")
 
-val projectsSmallDF = projectsDF.limit(5000)
-projectsSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "projects.csv")
+    val pullRequestsSmallDF = pullRequestsDF.limit(10000)
+    pullRequestsSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "pull_requests.csv")
 
-val projectLanguagesSmallDF = projectLanguagesDF.limit(3000)
-projectLanguagesSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "project_languages.csv")
+    val projectsSmallDF = projectsDF.limit(5000)
+    projectsSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "projects.csv")
+
+    val projectLanguagesSmallDF = projectLanguagesDF.limit(3000)
+    projectLanguagesSmallDF.coalesce(1).write.format("csv").mode("overwrite").save(data_path_small + "project_languages.csv")
+}

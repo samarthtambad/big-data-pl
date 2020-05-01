@@ -1,4 +1,4 @@
-package Ingest
+package ingest
 
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, TimestampType, ShortType, DoubleType}
 
