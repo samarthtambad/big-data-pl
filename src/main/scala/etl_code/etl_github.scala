@@ -3,7 +3,7 @@ package etl
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, TimestampType, ShortType, DoubleType}
 
-object TransformGithubRaw(sc: SparkContext, var path: String) {
+object TransformGithubRaw {
 
     // define path to data 
     val basePath: String = "project/data/"
@@ -112,7 +112,9 @@ object TransformGithubRaw(sc: SparkContext, var path: String) {
     }
 
     def main(args: Array[String]): Unit = {
-        val spark = SparkSession.builder.appName("TransformGithubRaw").getOrCreate()
+        val spark = SparkSession.builder
+        .appName("TransformGithubRaw")
+        .getOrCreate()
         
         transformUsersData(spark)
         transformProjectsData(spark)
