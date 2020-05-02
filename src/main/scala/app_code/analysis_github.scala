@@ -53,7 +53,7 @@ object AnalyzeGithub {
         StructField("year", IntegerType, false)
     ))
 
-    private joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
+    private def joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
         val joinedDF = df1.join(df2, colName)
         joinedDF.write.format("csv").mode("overwrite").save(basePath + outFileName)
         return joinedDF
