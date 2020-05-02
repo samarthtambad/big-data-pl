@@ -8,7 +8,7 @@ object TransformGithubRaw {
 
     // define path to data 
     val basePath: String = "project/data/"
-    val rawDataPath: String = basePath + "raw/"
+    val rawDataPath: String = basePath + "raw/data/"
     val cleanedDataPath: String = basePath + "cleaned/"
 
     // define schema

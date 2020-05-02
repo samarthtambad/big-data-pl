@@ -1,0 +1,14 @@
+# modules to be loaded
+module load spark/2.4.0
+module load git/1.8.3.1
+module load sbt/1.2.8
+module load scala/2.11.8
+
+# spark submit
+spark2-submit --name "<your job name>" --class <your main class> --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/<your JAR>.jar
+
+# example - run test
+spark2-submit --name "SAM_TEST" --class test.Test --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/big-data-pl_2.11-1.0.jar
+
+# example - run etl
+spark2-submit --name "SAM_TEST" --class test.Test --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/big-data-pl_2.11-1.0.jar
