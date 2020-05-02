@@ -1,53 +1,40 @@
+spark2-shell --packages com.databricks:spark-xml_2.11:0.9.0
+
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.{StructType, StructField, StringType, DoubleType}
+import org.apache.spark.sql.types.{StructType, StructField, StringType, DoubleType, TimestampType}
 import com.databricks.spark.xml._
+import org.apache.spark.sql.functions.split
+
 
 val spark = SparkSession.builder.getOrCreate()
 
-
-val customSchema = StructType(Array(
-  StructField("AcceptedAnswerId", StringType, nullable = true),
-  StructField("AnswerCount", StringType, nullable = true),
-  StructField("Body", StringType, nullable = true),
-  StructField("CreationDate", StringType, nullable = true),
-  StructField("Score", DoubleType, nullable = true),
-  StructField("Body", StringType, nullable = true),
-  StructField("OwnerUserId", StringType, nullable = true),
-  StructField("LastEditorDisplayName", DoubleType, nullable = true),
-  StructField("LastEditDate", StringType, nullable = true),
-  StructField("LastActivityDate", StringType, nullable = true), 
-  StructField("CommentCount", StringType, nullable = true)))
+var df = spark.read.option("rootTag", "posts").option("rowTag", "row").xml("rhn235/stackoverflow/Posts_small.xml")
+df = df.withColumn("_CreationDate", col("_CreationDate").cast("timestamp"))
+df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
+df = df.withColumn("_CommunityOwnedDate", col("_CommunityOwnedDate").cast("timestamp"))
+df = df.withColumn("_LastActivityDate", col("_LastActivityDate").cast("timestamp"))
+df = df.withColumn("_LastEditDate", col("_LastEditDate").cast("timestamp"))
+df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
+df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
 
 
- |-- _AcceptedAnswerId: long (nullable = true)
- |-- _AnswerCount: long (nullable = true)
- |-- _Body: string (nullable = true)
- |-- _ClosedDate: string (nullable = true)
- |-- _CommentCount: long (nullable = true)
- |-- _CommunityOwnedDate: string (nullable = true)
- |-- _CreationDate: string (nullable = true)
- |-- _FavoriteCount: long (nullable = true)
- |-- _Id: long (nullable = true)
- |-- _LastActivityDate: string (nullable = true)
- |-- _LastEditDate: string (nullable = true)
- |-- _LastEditorDisplayName: string (nullable = true)
- |-- _LastEditorUserId: long (nullable = true)
- |-- _OwnerDisplayName: string (nullable = true)
- |-- _OwnerUserId: long (nullable = true)
- |-- _ParentId: long (nullable = true)
- |-- _PostTypeId: long (nullable = true)
- |-- _Score: long (nullable = true)
- |-- _Tags: string (nullable = true)
- |-- _Title: string (nullable = true)
- |-- _ViewCount: long (nullable = true)
-
-val df = spark.read.option("rootTag", "posts").option("rowTag", "row").schema(customSchema).xml("rhn235/stackoverflow/Posts_small.xml")
+df = df.withColumn("_Tag", explode(split($"_Tags", "[<]")))
 
 
-val customSchema = StructType(Array(StructField("Id", StringType, true)))
-
-val df = spark.read.xml("rhn235/stackoverflow/Posts.xml")
+df = df.withColumn("_Tag", translate(col("_Tag"), ">", ""))
 
 
-val selectedData = df.select("Id", "Body")
-selectedData.write.xml("text.xml")
+
+val languages = sc.textFile("/user/svt258/project/data/cleaned/languages.csv")
+
+val languages_array = languages.collect().toList
+
+val filtered_df = df.filter(col("_Tag").isin(languages_array:_*))
+
+
+df = df.withColumn("_CreationYear", year($"_CreationDate"))
+
+val numProjects = df.rollup("_CreationYear", "_Tag").agg(count("_Tag") as "count").sort($"count".desc)
+
+
+val languages_array = languages.collect().toList
