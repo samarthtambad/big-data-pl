@@ -86,20 +86,19 @@ object ProfileGithub {
         StructField("num_distinct", LongType, false)
     ))
 
-    // val profileStatsDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
-    // val newRow = Seq(Row("int", 1000, 100, 60, 40, 800, 20, 10, 10))
-    // val newRowDF = spark.createDataFrame(spark.sparkContext.parallelize(newRow), profileStatsSchema)
-    // val appendedDF = profileStatsDF.union(newRowDF)
-
-    def getStatsIntegerCol(df: DataFrame, colName: String): DataFrame = {
-
+    def getStatsForCol(df: DataFrame, colName: String): DataFrame = {
+        
+        df.cache()
         val colType: String = df.schema(colName).dataType.toString
         val numRows: Long = df.count()
         val numNulls: Long = df.filter(df(colName).isNull || df(colName).isNaN).count()
         val numSpaces: Long = df.filter(df(colName) === " ").count()
         val numBlanks: Long = df.filter(df(colName) === "").count()
         val countProper: Long = numRows - numNulls - numSpaces - numBlanks
-        val minMax = df.agg(min(colName), max(colName)).head()
+        val minMax = df.schema(colName).dataType match {
+            case StringType => df.agg(min(length(col(colName))), max(length(col(colName)))).head()
+            case _ => df.agg(min(colName), max(colName)).head()
+        }
         val colMin: Int = minMax.getInt(0)
         val colMax: Int = minMax.getInt(1)
         val numDistinct: Long = df.agg(countDistinct(colName)).head().getLong(0)
@@ -111,7 +110,8 @@ object ProfileGithub {
 
     private def profileUsersData(spark: SparkSession): Unit = {
         val usersDF = spark.read.format("csv").schema(usersSchema).load(basePath + "users.csv")
-        val statsDF = getStatsIntegerCol(usersDF, "year")
+        val idStatsDF = 
+        val yearStatsDF = getStatsIntegerCol(usersDF, "year")
 
     }
 
@@ -127,7 +127,9 @@ object ProfileGithub {
 
     private def profileProjectsData(spark: SparkSession): Unit = {
         val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
-    
+        val yearStatsDF = getStatsForCol(projectsDF, "year")
+        val languageStatsDF = getStatsForCol(projectsDF, "language")
+
     }
 
     private def profileProjectLangData(spark: SparkSession): Unit = {
