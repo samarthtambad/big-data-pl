@@ -1,7 +1,7 @@
 package profile
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.avro._
+import com.databricks.spark.avro._
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, TimestampType, ShortType, DoubleType}
 import org.apache.spark.sql.functions.lower
 
