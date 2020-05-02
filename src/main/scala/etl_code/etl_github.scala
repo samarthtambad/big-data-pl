@@ -2,7 +2,7 @@ package etl
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-import com.databricks.spark.avro._
+// import com.databricks.spark.avro._
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, TimestampType, ShortType, DoubleType}
 
 object TransformGithubRaw {
@@ -74,7 +74,7 @@ object TransformGithubRaw {
         val usersDF_dropped = usersDF_nonull.drop("login").drop("name").drop("type").drop("fake").drop("deleted").drop("long").drop("lat").drop("country_code").drop("company").drop("state").drop("city")
         val usersDF_cleaned = usersDF_dropped.withColumn("year", split(col("created_at"), "-")(0)).drop("created_at")   // convert timestamp to year
         
-        usersDF_cleaned.write.format("avro").mode("overwrite").save(cleanedDataPath + "users.avro")
+        usersDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "users.csv")
     }
 
     private def transformProjectsData(spark: SparkSession): Unit = {
@@ -83,7 +83,7 @@ object TransformGithubRaw {
         val projectsDF_dropped = projectsDF_nonull.drop("url").drop("name").drop("descriptor").drop("forked_from").drop("deleted").drop("updated_at")
         val projectsDF_cleaned = projectsDF_dropped.filter(!projectsDF_dropped("language").contains("\\N")).withColumn("year", split(col("created_at"), "-")(0)).drop("created_at").withColumn("language", lower(col("language")))
         
-        projectsDF_cleaned.write.format("avro").mode("overwrite").save(cleanedDataPath + "projects.avro")
+        projectsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "projects.csv")
     }
 
     private def transformProjectLangData(spark: SparkSession): Unit = {
@@ -92,7 +92,7 @@ object TransformGithubRaw {
         val projectLanguagesDF_dropped = projectLanguagesDF_nonull.drop("bytes")    // drop unwanted columns
         val projectLanguagesDF_cleaned = projectLanguagesDF_dropped.withColumn("year", split(col("created_at"), "-")(0)).drop("created_at")
         
-        projectLanguagesDF_cleaned.write.format("avro").mode("overwrite").save(cleanedDataPath + "project_languages.avro")
+        projectLanguagesDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "project_languages.csv")
     }
 
     private def transformPullRequestData(spark: SparkSession): Unit = {
@@ -101,7 +101,7 @@ object TransformGithubRaw {
         val pullRequestsDF_dropped = pullRequestsDF_nonull.drop("intra_branch")     // drop unwanted columns
         val pullRequestsDF_cleaned = pullRequestsDF_dropped
         
-        pullRequestsDF_cleaned.write.format("avro").mode("overwrite").save(cleanedDataPath + "pull_requests.avro")
+        pullRequestsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "pull_requests.csv")
     }
 
     private def transformCommitsData(spark: SparkSession): Unit = {
@@ -110,7 +110,7 @@ object TransformGithubRaw {
         val commitsDF_dropped = commitsDF_nonull.drop("sha")    // drop unwanted columns    
         val commitsDF_cleaned = commitsDF_dropped.withColumn("year", split(col("created_at"), "-")(0)).drop("created_at")
         
-        commitsDF_cleaned.write.format("avro").mode("overwrite").save(cleanedDataPath + "commits.avro")
+        commitsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "commits.csv")
     }
 
     def main(args: Array[String]): Unit = {
