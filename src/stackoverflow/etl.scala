@@ -29,12 +29,19 @@ val languages = sc.textFile("/user/svt258/project/data/cleaned/languages.csv")
 
 val languages_array = languages.collect().toList
 
-val filtered_df = df.filter(col("_Tag").isin(languages_array:_*))
-
+df = df.filter(col("_Tag").isin(languages_array:_*))
 
 df = df.withColumn("_CreationYear", year($"_CreationDate"))
 
-val numProjects = df.rollup("_CreationYear", "_Tag").agg(count("_Tag") as "count").sort($"count".desc)
+val tagCountsByYear = df.rollup("_CreationYear", "_Tag").agg(count("_Tag") as "count").sort($"count".desc)
 
 
-val languages_array = languages.collect().toList
+# by programming language per year 
+    # questions
+    #score
+    #of answers
+    (#questions or #score ) / #answers
+    #average response time
+    #unanswered questions
+    #sentiments #ignore
+    #users
