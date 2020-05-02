@@ -11,6 +11,14 @@ module load git/1.8.3.1
 module load sbt/1.2.8
 module load scala/2.11.8
 
+# go to project root
+
+# compile
+sbt compile
+
+# package into jar
+sbt package
+
 # spark submit
 spark2-submit --name "<your job name>" --class <your main class> --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/<your JAR>.jar
 
@@ -19,3 +27,9 @@ spark2-submit --name "SAM_TEST" --class test.Test --master yarn --deploy-mode cl
 
 # example - run etl
 spark2-submit --name "SAM_ETL_7" --class etl.TransformGithubRaw --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+
+# example - run profile
+spark2-submit --name "SAM_PROFILE_1" --class profile.ProfileGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+
+# example - run analysis
+spark2-submit --name "SAM_ANALYZE_1" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
