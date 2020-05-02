@@ -2,10 +2,15 @@ package etl
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-// import com.databricks.spark.avro._
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, TimestampType, ShortType, DoubleType}
 
 object TransformGithubRaw {
+    /* 
+     *  Data: Github
+     *  Source: https://ghtorrent.org/downloads.html
+     *  Size: 102 GB
+     *  Schema: https://ghtorrent.org/files/schema.pdf
+    */
 
     // define path to data 
     val basePath: String = "project/data/"
