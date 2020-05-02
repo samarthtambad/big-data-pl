@@ -1,6 +1,6 @@
 // The simplest possible sbt build file is just one line:
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.11.8"
 // That is, to create a valid sbt build, all you've got to do is define the
 // version of Scala you'd like your project to use.
 
@@ -12,7 +12,7 @@ scalaVersion := "2.13.1"
 
 // It's possible to define many kinds of settings, such as:
 
-name := "hello-world"
+name := "big-data-pl"
 organization := "ch.epfl.scala"
 version := "1.0"
 
@@ -23,7 +23,16 @@ version := "1.0"
 
 // Want to use a published library in your project?
 // You can define other libraries as dependencies in your build like this:
+
 libraryDependencies += "org.typelevel" %% "cats-core" % "2.0.0"
+
+// https://mvnrepository.com/artifact/org.apache.spark/spark-core
+libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.4.0"
+libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.4.0"
+libraryDependencies += "org.apache.spark" % "spark-mllib_2.11" % "2.4.0"
+libraryDependencies += "org.apache.hadoop" % "hadoop-common" % "3.2.0"
+libraryDependencies += "com.databricks" %% "spark-avro" % "4.0.0"
+
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
 // we're adding the cats dependency to the set of dependencies that sbt will go
 // and fetch when it starts up.
