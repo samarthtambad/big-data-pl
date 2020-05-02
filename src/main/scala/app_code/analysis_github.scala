@@ -74,12 +74,19 @@ object AnalyzeGithub {
         projectsDF.cache()
 
         val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv")
+        projectLanguagesDF.cache()
+
         // val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv")
+        
         val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv")
+        commitsDF.cache()
+
+
+        // join projectLanguagesDF and commitsDF
+        val joinedDF = projectLanguagesDF.drop("year").join(commitsDF, "project_id")
+        joinedDF.write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "join_projectlang_commits.csv")
 
         // computeNumProjects(spark, projectsDF)
-
-        joinAndSave(spark, projectLanguagesDF, commitsDF, "project_id", "join_projectlang_commits.csv")
 
     }
 
