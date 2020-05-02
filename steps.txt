@@ -1,3 +1,10 @@
+###################################################
+# CONFIGURATION
+# scala - 2.11.8
+# spark - 2.3.0.cloudera4
+# Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_162
+###################################################
+
 # modules to be loaded
 module load spark/2.4.0
 module load git/1.8.3.1
@@ -11,4 +18,4 @@ spark2-submit --name "<your job name>" --class <your main class> --master yarn -
 spark2-submit --name "SAM_TEST" --class test.Test --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/big-data-pl_2.11-1.0.jar
 
 # example - run etl
-spark2-submit --name "SAM_ETL" --class etl.TransformGithubRaw --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+spark2-submit --packages org.apache.spark:spark-avro_2.11:2.3.0 --name "SAM_ETL_3" --class etl.TransformGithubRaw --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
