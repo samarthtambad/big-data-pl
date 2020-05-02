@@ -11,6 +11,14 @@ module load git/1.8.3.1
 module load sbt/1.2.8
 module load scala/2.11.8
 
+# go to project root
+
+# compile
+sbt compile
+
+# package into jar
+sbt package
+
 # spark submit
 spark2-submit --name "<your job name>" --class <your main class> --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/<your JAR>.jar
 

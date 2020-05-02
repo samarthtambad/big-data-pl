@@ -2,8 +2,7 @@ package profile
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{StructField, StructType, StringType, IntegerType, LongType, TimestampType, ShortType, DoubleType}
-import org.apache.spark.sql.functions.lower
-import org.apache.spark.sql.functions.countDistinct
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.DataFrame
 
