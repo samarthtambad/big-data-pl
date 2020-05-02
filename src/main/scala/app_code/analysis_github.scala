@@ -55,7 +55,7 @@ object AnalyzeGithub {
 
     private def joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
         val joinedDF = df1.join(df2, colName)
-        joinedDF.write.format("csv").mode("overwrite").save(basePath + outFileName)
+        joinedDF.write.format("csv").mode("overwrite").save(baseSavePath + outFileName)
         return joinedDF
     }
 
@@ -73,11 +73,13 @@ object AnalyzeGithub {
         val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
         projectsDF.cache()
 
-        // val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv")
+        val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv")
         // val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv")
-        // val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv")
+        val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv")
 
-        computeNumProjects(spark, projectsDF)
+        // computeNumProjects(spark, projectsDF)
+
+        joinAndSave(spark, projectLanguagesDF, commitsDF, "project_id", "join_projectlang_commits.csv")
 
     }
 
