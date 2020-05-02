@@ -14,6 +14,8 @@ object Test {
         .appName("SubmitTest")
         .getOrCreate
 
+        val sc = spark.sparkContext
+
         val file: String = "loudacre/weblog/2014-03-15.log"
         val accountFile: String = "loudacre/accounts/*"
 
