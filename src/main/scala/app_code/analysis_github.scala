@@ -61,7 +61,7 @@ object AnalyzeGithub {
 
     // get number of projects by language per year
     private def computeNumProjects(spark: SparkSession, df: DataFrame): Unit = {
-        val numProjectsDF = df.rollup("year", "language").agg(count("language") as "count").sort(desc("count")).na.drop()
+        val numProjectsDF = df.groupBy("year", "language").agg(count("language") as "count").sort(desc("count"))
         numProjectsDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "time_num_projects.csv")
     }
 
