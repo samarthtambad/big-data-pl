@@ -126,7 +126,7 @@ object AnalyzeGithub {
 
     // save number of pull requests per language per year
     private def computeNumPullRequests(spark: SparkSession, outFileName: String): Unit = {
-        val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv").drop("head_repo_id").drop("head_commit_id").drop("base_commit_id").drop("pull_request_id")
+        val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv").drop("head_repo_id").drop("head_commit_id").drop("base_commit_id").drop("pull_request_id").withColumn("pull_request_id", col("id")).drop("id").withColumn("project_id", col("base_repo_id")).drop("base_repo_id")
         val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
         val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv").drop("year")
         
@@ -134,8 +134,8 @@ object AnalyzeGithub {
         projectLanguagesDF.cache()
 
         val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(pullRequestHistoryDF("action") === "opened").drop("action")  // only looking at pull request open event
-        val prJoinedDF = pullRequestHistoryDF_filtered.join(pullRequestsDF, pullRequestHistoryDF_filtered("pull_request_id") === pullRequestsDF("id"))
-        val joinedDF = prJoinedDF.join(projectLanguagesDF, prJoinedDF("base_repo_id") === projectLanguagesDF("project_id"))
+        val prJoinedDF = pullRequestHistoryDF_filtered.join(pullRequestsDF, "pull_request_id"))
+        val joinedDF = prJoinedDF.join(projectLanguagesDF, "project_id")
         val numPullRequest = joinedDF.groupBy("year", "language").agg(count("id") as "num_pull_requests").sort(desc("num_pull_requests"))
 
         // save computed data to hdfs
