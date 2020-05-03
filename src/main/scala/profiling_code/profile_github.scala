@@ -43,9 +43,9 @@ object ProfileGithub {
     val pullRequestsHistorySchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("pull_request_id", IntegerType, false),
-        StructField("created_at", TimestampType, false),
         StructField("action", StringType, false),
-        StructField("actor_id", IntegerType, false)
+        StructField("actor_id", IntegerType, false),
+        StructField("year", IntegerType, false)
     ))
 
     val projectsSchema = StructType(Array(

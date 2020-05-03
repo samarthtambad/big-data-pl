@@ -43,9 +43,9 @@ object AnalyzeGithub {
     val pullRequestsHistorySchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("pull_request_id", IntegerType, false),
-        StructField("created_at", TimestampType, false),
         StructField("action", StringType, false),
-        StructField("actor_id", IntegerType, false)
+        StructField("actor_id", IntegerType, false),
+        StructField("year", TimestampType, false)
     ))
 
     val projectsSchema = StructType(Array(
@@ -127,6 +127,7 @@ object AnalyzeGithub {
     // save number of pull requests per language per year
     private def computeNumPullRequests(spark: SparkSession, outFileName: String): Unit = {
         val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv").drop("head_repo_id").drop("head_commit_id").drop("base_commit_id").drop("pull_request_id")
+        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
         val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv").drop("year")
         
         pullRequestsDF.cache()
@@ -147,8 +148,8 @@ object AnalyzeGithub {
 
         // computeNumProjects(spark, "time_num_projects.csv")
         // computeNumCommits(spark, "time_num_commits.csv")
-        computeNumUsers(spark, "time_num_users.csv")
-        computeNumPullRequests(spark, "time_num_pull_req.csv")
+        // computeNumUsers(spark, "time_num_users.csv")
+        // computeNumPullRequests(spark, "time_num_pull_req.csv")
 
     }
 
