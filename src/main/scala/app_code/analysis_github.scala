@@ -133,7 +133,13 @@ object AnalyzeGithub {
         pullRequestsDF.cache()
         projectLanguagesDF.cache()
 
+        val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(col("action") == "opened").drop("action")  // only looking at pull request open event
+        val prJoinedDF = pullRequestHistoryDF_filtered.join(pullRequestsDF, pullRequestHistoryDF_filtered("pull_request_id") === pullRequestsDF("id"))
+        val joinedDF = prJoinedDF.join(projectLanguagesDF, prJoinedDF("base_repo_id") === projectLanguagesDF("project_id"))
+        val numPullRequest = joinedDF.groupBy("year", "language").agg(count("id") as "num_pull_requests").sort(desc("num_pull_requests"))
 
+        // save computed data to hdfs
+        numPullRequest.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)   
     }
 
     def main(args: Array[String]): Unit = {
@@ -149,7 +155,7 @@ object AnalyzeGithub {
         // computeNumProjects(spark, "time_num_projects.csv")
         // computeNumCommits(spark, "time_num_commits.csv")
         // computeNumUsers(spark, "time_num_users.csv")
-        // computeNumPullRequests(spark, "time_num_pull_req.csv")
+        computeNumPullRequests(spark, "time_num_pull_req.csv")
 
     }
 
