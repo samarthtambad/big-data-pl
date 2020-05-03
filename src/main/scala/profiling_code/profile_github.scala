@@ -6,34 +6,17 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.DataFrame
 
+/**
+  * Data: Github
+  * Source: https://ghtorrent.org/downloads.html
+  * Size: 102 GB
+  * Schema: https://ghtorrent.org/files/schema.pdf
+  */
 object ProfileGithub {
-    /* 
-     *  Data: Github
-     *  Source: https://ghtorrent.org/downloads.html
-     *  Size: 102 GB
-     *  Schema: https://ghtorrent.org/files/schema.pdf
-    */
 
     // define path to data
     val basePath: String = "project/data/cleaned/"
     val baseSavePath: String = "project/data/stats/"
-
-    /* 
-        Profile Info
-        ------------
-        DataFrame: 
-        1. Column Count
-        2. Row Count
-
-        Integer data columns:
-        1. Max, Min
-        2. Distinct
-
-        String data columns:
-        1. MaxLen, MinLen
-        2. Distinct Values
-        3. Number of Distinct
-    */
 
     val usersSchema = StructType(Array(
         StructField("id", IntegerType, false),
@@ -70,7 +53,7 @@ object ProfileGithub {
         StructField("year", IntegerType, false)
     ))
 
-    // reference for design
+    // reference for design of profiling df schema
     // https://towardsdatascience.com/profiling-big-data-in-distributed-environment-using-spark-a-pyspark-data-primer-for-machine-78c52d0ce45
     val profileStatsSchema = StructType(Array(
         StructField("col_name", StringType, false),
@@ -85,6 +68,7 @@ object ProfileGithub {
         StructField("num_distinct", LongType, false)
     ))
 
+    // given a df, compute stats for each column and return new df above schema
     def getStatsForCol(spark: SparkSession, df: DataFrame, colName: String): DataFrame = {
         val colType: String = df.schema(colName).dataType.toString
         val numRows: Long = df.count()
