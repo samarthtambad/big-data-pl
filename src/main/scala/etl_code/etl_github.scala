@@ -84,19 +84,15 @@ object TransformGithubRaw {
         usersDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "users.csv")
     }
 
-    // Load raw data from projects.csv, drop unwanted columns and rows with null values, filter out commits with year <2007 and >2019
+    // Load raw data from projects.csv, drop unwanted columns and rows with null values.
     private def transformProjectsData(spark: SparkSession): Unit = {
         val projectsDF = spark.read.format("csv").schema(projectsSchema).load(rawDataPath + "projects.csv")
         val projectsDF_dropped = projectsDF.drop("url").drop("name").drop("descriptor").drop("forked_from").drop("deleted").drop("updated_at")
         val projectsDF_nonull = projectsDF_dropped.na.drop()    // remove null values
-        val projectsDF_cleaned = projectsDF_nonull.filter(!projectsDF_dropped("language").contains("\\N")).withColumn("year", split(col("created_at"), "-")(0).toInt).drop("created_at").withColumn("language", lower(col("language")))
-        
-        // Profiling revealed that commits have timestamps bw 1970 to 2038. This happens if clock is misconfigured
-        // on the developer's workstation during commit (as recorded by Git).
-        val projectsDF_filtered = projectsDF_cleaned.filter(col("year") < 2007 && col("year") > 2019)   // filter out commits with year <2007 and >2019
+        val projectsDF_cleaned = projectsDF_nonull.filter(!projectsDF_nonull("language").contains("\\N")).withColumn("year", split(col("created_at"), "-")(0)).drop("created_at").withColumn("language", lower(col("language")))
 
         // save cleaned data to hdfs
-        projectsDF_filtered.write.format("csv").mode("overwrite").save(cleanedDataPath + "projects.csv")
+        projectsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "projects.csv")
     }
 
     // Load raw data from project_languages.csv, drop unwanted columns and rows with null values.
@@ -121,15 +117,19 @@ object TransformGithubRaw {
         pullRequestsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "pull_requests.csv")
     }
 
-    // Load raw data from commits.csv, drop unwanted columns and rows with null values.
+    // Load raw data from commits.csv, drop unwanted columns and rows with null values, filter out commits with year <2007 and >2019
     private def transformCommitsData(spark: SparkSession): Unit = {
         val commitsDF = spark.read.format("csv").schema(commitsSchema).load(rawDataPath + "commits.csv")
         val commitsDF_dropped = commitsDF.drop("sha")    // drop unwanted columns    
         val commitsDF_nonull = commitsDF_dropped.na.drop()      // remove null values
         val commitsDF_cleaned = commitsDF_nonull.withColumn("year", split(col("created_at"), "-")(0)).drop("created_at")
         
+        // Profiling revealed that commits have timestamps bw 1970 to 2038. This happens if clock is misconfigured
+        // on the developer's workstation during commit (as recorded by Git).
+        val commitsDF_filtered = commitsDF_cleaned.filter(col("year") >= 2007 && col("year") <= 2019)   // filter commits with 2007 <= year <= 2019
+
         // save cleaned data to hdfs
-        commitsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "commits.csv")
+        commitsDF_filtered.write.format("csv").mode("overwrite").save(cleanedDataPath + "commits.csv")
     }
 
     def main(args: Array[String]): Unit = {
