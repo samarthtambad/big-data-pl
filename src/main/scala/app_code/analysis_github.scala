@@ -133,7 +133,7 @@ object AnalyzeGithub {
         pullRequestsDF.cache()
         projectLanguagesDF.cache()
 
-        val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(col("action") == "opened").drop("action")  // only looking at pull request open event
+        val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(pullRequestHistoryDF("action") === "opened").drop("action")  // only looking at pull request open event
         val prJoinedDF = pullRequestHistoryDF_filtered.join(pullRequestsDF, pullRequestHistoryDF_filtered("pull_request_id") === pullRequestsDF("id"))
         val joinedDF = prJoinedDF.join(projectLanguagesDF, prJoinedDF("base_repo_id") === projectLanguagesDF("project_id"))
         val numPullRequest = joinedDF.groupBy("year", "language").agg(count("id") as "num_pull_requests").sort(desc("num_pull_requests"))
