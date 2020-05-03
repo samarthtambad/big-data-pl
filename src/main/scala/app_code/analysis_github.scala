@@ -40,6 +40,14 @@ object AnalyzeGithub {
         StructField("pull_request_id", IntegerType, false)
     ))
 
+    val pullRequestsHistorySchema = StructType(Array(
+        StructField("id", IntegerType, false),
+        StructField("pull_request_id", IntegerType, false),
+        StructField("created_at", TimestampType, false),
+        StructField("action", StringType, false),
+        StructField("actor_id", IntegerType, false)
+    ))
+
     val projectsSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("owner_id", IntegerType, false),
@@ -134,6 +142,7 @@ object AnalyzeGithub {
         // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
         // val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv")
         // val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv")
+        // val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
         // val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv")
 
         // computeNumProjects(spark, "time_num_projects.csv")

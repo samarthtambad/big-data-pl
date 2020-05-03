@@ -188,7 +188,7 @@ object ProfileGithub {
     }
 
     private def profilePullRequestHistoryData(spark: SparkSession): Unit = {
-        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_request_history.csv")
+        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
         pullRequestHistoryDF.cache()
         
         val idStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "id")
