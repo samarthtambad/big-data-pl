@@ -155,11 +155,11 @@ object TransformGithubRaw {
         .appName("TransformGithubRaw")
         .getOrCreate()
         
-        // transformUsersData(spark)
-        // transformProjectsData(spark)
-        // transformProjectLangData(spark)
-        // transformPullRequestData(spark)
-        // transformCommitsData(spark)
+        transformUsersData(spark)
+        transformProjectsData(spark)
+        transformProjectLangData(spark)
+        transformPullRequestData(spark)
+        transformCommitsData(spark)
         transformPullRequestHistoryData(spark)
         
     }

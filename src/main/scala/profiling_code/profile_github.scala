@@ -40,6 +40,14 @@ object ProfileGithub {
         StructField("pull_request_id", IntegerType, false)
     ))
 
+    val pullRequestsHistorySchema = StructType(Array(
+        StructField("id", IntegerType, false),
+        StructField("pull_request_id", IntegerType, false),
+        StructField("created_at", TimestampType, false),
+        StructField("action", StringType, false),
+        StructField("actor_id", IntegerType, false)
+    ))
+
     val projectsSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("owner_id", IntegerType, false),
@@ -179,14 +187,35 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "project_languages_stats.csv")
     }
 
+    private def profilePullRequestHistoryData(spark: SparkSession): Unit = {
+        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_request_history.csv")
+        pullRequestHistoryDF.cache()
+        
+        val idStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "id")
+        val pridStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "pull_request_id")
+        val actionStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "action")
+        val aidStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "actor_id")
+        val yearStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "year")
+
+        val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
+        val df1 = emptyDF.union(idStatsDF)
+        val df2 = df1.union(pridStatsDF)
+        val df3 = df2.union(actionStatsDF)
+        val df4 = df3.union(aidStatsDF)
+        val finalDF = df4.union(yearStatsDF)
+
+        finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "pull_request_history_stats.csv")
+    }
+
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder.appName("ProfileGithub").getOrCreate()
 
-        profileUsersData(spark)
-        profileProjectsData(spark)
-        profileProjectLangData(spark)
-        profilePullRequestsData(spark)
-        profileCommitsData(spark)
+        // profileUsersData(spark)
+        // profileProjectsData(spark)
+        // profileProjectLangData(spark)
+        // profilePullRequestsData(spark)
+        // profileCommitsData(spark)
+        profilePullRequestHistoryData(spark)
     }
 
 }
