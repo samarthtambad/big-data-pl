@@ -45,7 +45,7 @@ object AnalyzeGithub {
         StructField("pull_request_id", IntegerType, false),
         StructField("action", StringType, false),
         StructField("actor_id", IntegerType, false),
-        StructField("year", TimestampType, false)
+        StructField("year", IntegerType, false)
     ))
 
     val projectsSchema = StructType(Array(
