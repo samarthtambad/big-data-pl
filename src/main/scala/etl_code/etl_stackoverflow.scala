@@ -3,7 +3,10 @@ package etl
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{StructType, StructField, StringType, DoubleType, TimestampType}
 import com.databricks.spark.xml._
-import org.apache.spark.sql.functions.split
+//import org.apache.spark.sql.functions.split
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.DataFrame
 
 object TransformStackOverflowRaw {
     /* 
