@@ -36,29 +36,29 @@ object ProfileStackOverflow {
     */
 
     val postsSchema = StructType(Array(
-        StructField("_AcceptedAnswerId", LongType, nullable = true),
-        StructField("_AnswerCount", LongType, nullable = true),
-        StructField("_Body", StringType, nullable = true),
-        StructField("_ClosedDate", TimestampType, nullable = true), 
-        StructField("_CommentCount", LongType, nullable = true),
-        StructField("_CommunityOwnedDate", TimestampType, nullable = true), 
-        StructField("_CreationDate", TimestampType, nullable = true), 
-        StructField("_FavoriteCount", LongType, nullable = true),
-        StructField("_Id", LongType, nullable = true),
-        StructField("_LastActivityDate", TimestampType, nullable = true), 
-        StructField("_LastEditDate", TimestampType, nullable = true),
-        StructField("_LastEditorDisplayName", StringType, nullable = true),
-        StructField("_LastEditorUserId", LongType, nullable = true),
-        StructField("_OwnerDisplayName", StringType, nullable = true), 
-        StructField("_OwnerUserId", LongType, nullable = true), 
-        StructField("_ParentId", LongType, nullable = true), 
-        StructField("_Score", LongType, nullable = true),
-        StructField("_Tags", StringType, nullable = true),
-        StructField("_Title", StringType, nullable = true), 
-        StructField("_ViewCount", LongType, nullable = true), 
-        StructField("_PostTypeId", LongType, nullable = true)
-        StructField("_Tag", StringType, nullable = true)
-        StructField("_CreationYear", IntegerType, nullable = true)
+        StructField("_AcceptedAnswerId", LongType, true),
+        StructField("_AnswerCount", LongType, true),
+        StructField("_Body", StringType, true),
+        StructField("_ClosedDate", TimestampType, true), 
+        StructField("_CommentCount", LongType, true),
+        StructField("_CommunityOwnedDate", TimestampType, true), 
+        StructField("_CreationDate", TimestampType, true), 
+        StructField("_FavoriteCount", LongType, true),
+        StructField("_Id", LongType, true),
+        StructField("_LastActivityDate", TimestampType, true), 
+        StructField("_LastEditDate", TimestampType, true),
+        StructField("_LastEditorDisplayName", StringType, true),
+        StructField("_LastEditorUserId", LongType, true),
+        StructField("_OwnerDisplayName", StringType, true), 
+        StructField("_OwnerUserId", LongType, true), 
+        StructField("_ParentId", LongType, true), 
+        StructField("_Score", LongType, true),
+        StructField("_Tags", StringType, true),
+        StructField("_Title", StringType, true), 
+        StructField("_ViewCount", LongType, true), 
+        StructField("_PostTypeId", LongType, true), 
+        StructField("_Tag", StringType, true), 
+        StructField("_CreationYear", IntegerType, true)
     )) 
     
     // reference for design
@@ -100,8 +100,8 @@ object ProfileStackOverflow {
         val postsDF = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv")
         postsDF.cache()
         
-        val idStatsDF = getStatsForCol(spark, usersDF, "Id")
-        val yearStatsDF = getStatsForCol(spark, usersDF, "_CreationYear")
+        val idStatsDF = getStatsForCol(spark, postsDF, "Id")
+        val yearStatsDF = getStatsForCol(spark, postsDF, "_CreationYear")
 
         val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
         val df1 = emptyDF.union(idStatsDF)
