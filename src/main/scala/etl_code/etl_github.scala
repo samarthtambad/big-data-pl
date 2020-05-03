@@ -53,6 +53,14 @@ object TransformGithubRaw {
         StructField("intra_branch", ShortType, true)
     ))
 
+    val pullRequestsHistorySchema = StructType(Array(
+        StructField("id", IntegerType, false),
+        StructField("pull_request_id", IntegerType, false),
+        StructField("created_at", TimestampType, false),
+        StructField("action", StringType, false),
+        StructField("actor_id", IntegerType, false)
+    ))
+
     val projectsSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("url", StringType, false),
@@ -132,16 +140,27 @@ object TransformGithubRaw {
         commitsDF_filtered.write.format("csv").mode("overwrite").save(cleanedDataPath + "commits.csv")
     }
 
+    // Load raw data from pull_request_history.csv, drop unwanted columns and rows with null values.
+    private def transformPullRequestHistoryData(spark: SparkSession): Unit = {
+        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(rawDataPath + "pull_request_history.csv")
+        val pullRequestHistoryDF_nonull = pullRequestHistoryDF.na.drop()    // remove null values
+        val pullRequestHistoryDF_cleaned = pullRequestHistoryDF_nonull.withColumn("year", split(col("created_at"), "-")(0)).drop("created_at")
+        
+        // save cleaned data to hdfs
+        pullRequestHistoryDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "pull_request_history.csv")
+    }
+
     def main(args: Array[String]): Unit = {
         val spark = SparkSession.builder
         .appName("TransformGithubRaw")
         .getOrCreate()
         
-        transformUsersData(spark)
-        transformProjectsData(spark)
-        transformProjectLangData(spark)
-        transformPullRequestData(spark)
-        transformCommitsData(spark)
+        // transformUsersData(spark)
+        // transformProjectsData(spark)
+        // transformProjectLangData(spark)
+        // transformPullRequestData(spark)
+        // transformCommitsData(spark)
+        transformPullRequestHistoryData(spark)
         
     }
 
