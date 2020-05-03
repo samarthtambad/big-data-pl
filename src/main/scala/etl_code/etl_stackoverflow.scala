@@ -7,7 +7,6 @@ import com.databricks.spark.xml._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.DataFrame
-import spark.implicits._ // << add this
 
 object TransformStackOverflowRaw {
     /* 
@@ -37,11 +36,12 @@ object TransformStackOverflowRaw {
         df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
 
         //Clean tags
+	import spark.implicits._ 
         df = df.withColumn("_Tag", explode(split($"_Tags", "[<]")))
         df = df.withColumn("_Tag", translate(col("_Tag"), ">", ""))
 
         //Get languages list
-        val languages = spark.textFile("/user/svt258/project/data/cleaned/languages.csv")
+        val languages = spark.sparkContext.textFile("/user/svt258/project/data/cleaned/languages.csv")
         val languages_array = languages.collect().toList
 
         //Filter tags based on language
