@@ -65,7 +65,7 @@ object AnalyzeGithub {
         StructField("id", IntegerType, false),
         StructField("repo_id", IntegerType, false),
         StructField("issue_id", IntegerType, false),
-        StructField("year", IntegerType, false),
+        StructField("year", IntegerType, false)
     ))
 
     val issueEventsSchema = StructType(Array(
