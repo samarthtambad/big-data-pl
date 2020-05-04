@@ -35,6 +35,21 @@ object TransformStackOverflowRaw {
         df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
         df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
 
+        //cast longs to ints
+        df = df.withColumn("_AcceptedAnswerId", toInt(df("_AcceptedAnswerId")))
+        df = df.withColumn("_AnswerCount", toInt(df("_AnswerCount")))
+        df = df.withColumn("_CommentCount", toInt(df("_CommentCount")))
+        df = df.withColumn("_FavoriteCount", toInt(df("_FavoriteCount")))
+        df = df.withColumn("_Id", toInt(df("_Id")))
+        df = df.withColumn("_LastEditorUserId", toInt(df("_LastEditorUserId")))
+        df = df.withColumn("_OwnerUserId", toInt(df("_OwnerUserId")))
+        df = df.withColumn("_ParentId", toInt(df("_ParentId")))
+        df = df.withColumn("_Score", toInt(df("_Score")))
+        df = df.withColumn("_ViewCount", toInt(df("_ViewCount")))
+        df = df.withColumn("_PostTypeId", toInt(df("_PostTypeId")))
+
+        
+
         //Clean tags
 	    import spark.implicits._ 
         df = df.withColumn("_Tag", explode(split($"_Tags", "[<]")))
