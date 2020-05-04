@@ -109,19 +109,47 @@ object AnalyzeGithub {
 
     // save number of users per language per year
     private def computeNumUsers(spark: SparkSession, outFileName: String): Unit = {
-        val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv").drop("author_id").drop("committer_id")
+        val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv").drop("id").drop("committer_id")
+            .withColumn("user_id", col("author_id")).drop("author_id")
         val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year")
-        val usersDF = spark.read.format("csv").schema(usersSchema).load(basePath + "users.csv")
+            .withColumn("project_id", col("id")).drop("id")
+        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
+            .drop("id").withColumn("user_id", col("actor_id")).drop("actor_id")
+        val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv").drop("head_repo_id")
+            .drop("head_commit_id").drop("base_commit_id").drop("pull_request_id").withColumn("pull_request_id", col("id")).drop("id")
+            .withColumn("project_id", col("base_repo_id")).drop("base_repo_id")
         
         commitsDF.cache()
         projectsDF.cache()
-        usersDF.cache()
+        pullRequestsDF.cache()
+        pullRequestHistoryDF.cache()
 
-        // there are many commits per project. reduce by number of commits per project
-        // this command reduces the number of rows by a factor of 100. (necessary as next step is a join)
-        val commitsReducedDF = commitsDF.groupBy("year", "project_id").agg(count("id") as "num_commits")
-        commitsReducedDF.write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "commits_reduced.csv")
-        commitsReducedDF.show(10)
+        // join pull_request_history with pull_requests to link user_id with project_id for open pull request events
+        val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(pullRequestHistoryDF("action") === "opened").drop("action")  // only looking at pull request open event
+        val pullRequestJoinedDF = pullRequestHistoryDF_filtered.join(pullRequestsDF, "pull_request_id").drop("pull_request_id")
+        val pullRequestJoinedDF_reduced = pullRequestJoinedDF.distinct()
+
+        // reduce commits to only unique (user_id, project_id, year) rows
+        val commitsDF_reduced = commitsDF.distinct()
+
+        // both commits and pull requests df are now of the form (user_id, project_id, year)
+        // combine both df using union
+        val userActivityDF = pullRequestJoinedDF_reduced.union(commitsDF_reduced)
+
+        // reduce to only unique values
+        val userActivityDF_reduced = userActivityDF.distinct()
+
+        // join with projects to link user activity to a language
+        val userLanguageActivityDF = userActivityDF_reduced.join(projectsDF, "project_id").drop("project_id")
+
+        // reduce to only unique rows of the form (user_id, language, year)
+        val userLanguageActivityDF_reduced = userLanguageActivityDF.distinct()
+
+        // aggregate count of num_users per language per year
+        val numUsers = userLanguageActivityDF_reduced.groupBy("year", "language").agg(count("user_id") as "num_users").sort(desc("num_users"))
+
+        // save computed data to hdfs
+        numUsers.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
     }
 
     // save number of pull requests per language per year
@@ -154,8 +182,8 @@ object AnalyzeGithub {
 
         // computeNumProjects(spark, "time_num_projects.csv")
         // computeNumCommits(spark, "time_num_commits.csv")
-        // computeNumUsers(spark, "time_num_users.csv")
-        computeNumPullRequests(spark, "time_num_pull_req.csv")
+        computeNumUsers(spark, "time_num_users.csv")
+        // computeNumPullRequests(spark, "time_num_pull_req.csv")
 
     }
 
