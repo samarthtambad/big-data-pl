@@ -36,7 +36,7 @@ object TransformStackOverflowRaw {
         df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
 
         //Clean tags
-	import spark.implicits._ 
+	    import spark.implicits._ 
         df = df.withColumn("_Tag", explode(split($"_Tags", "[<]")))
         df = df.withColumn("_Tag", translate(col("_Tag"), ">", ""))
 
