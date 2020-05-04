@@ -185,11 +185,32 @@ object AnalyzeGithub {
     }
 
     // save number of pending issues (not yet closed) per language per year
-    private def computeNumIssues(spark: SparkSession, outFileName: String): Unit = {
-        val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
+    private def computeNumPendingIssues(spark: SparkSession, outFileName: String): Unit = {
+        val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv").drop("issue_id")
+            .withColumn("issue_id", col("id")).drop("id").withColumn("project_id", col("repo_id")).drop("repo_id")
+            .filter(col("year") >= 2007 && col("year") <= 2019)
         val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
+            .drop("year").filter(col("year") >= 2007 && col("year") <= 2019)
+        val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year")
+            .withColumn("project_id", col("id")).drop("id")
 
-        // 
+        issuesDF.cache()
+        projectsDF.cache()
+        issueEventsDF.cache()
+
+        // filter only issue close events
+        val issueEventsDF_filtered = issueEventsDF.filter(issueEventsDF("action") == "closed").drop("action")
+
+        // remove rows in issues that match issue_id in issue_events
+        val pendingIssuesDF = issuesDF.join(issueEventsDF_filtered, Seq("issue_id"), "left_anti")
+
+        // join with project to link issue with language
+        val joinedPendingIssuesDF = pendingIssuesDF.join(projectsDF, "project_id").drop("project_id")
+        val joinedPendingIssuesDF_distinct = joinedPendingIssuesDF.distinct()
+        val numPendingIssues = joinedPendingIssuesDF_distinct.groupBy("year", "language").agg(count("issue_id") as "num_pending_issues").sort(desc("num_pending_issues"))
+
+        // save computed data to hdfs
+        numPendingIssues.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName) 
     }
 
     def main(args: Array[String]): Unit = {
@@ -206,8 +227,9 @@ object AnalyzeGithub {
 
         // computeNumProjects(spark, "time_num_projects.csv")
         // computeNumCommits(spark, "time_num_commits.csv")
-        computeNumUsers(spark, "time_num_users.csv")
+        // computeNumUsers(spark, "time_num_users.csv")
         // computeNumPullRequests(spark, "time_num_pull_req.csv")
+        computeNumPendingIssues(spark, "time_num_pending_issues.csv")
 
     }
 
