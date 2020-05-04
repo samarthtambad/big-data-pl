@@ -81,6 +81,26 @@ object TransformGithubRaw {
         StructField("created_at", TimestampType, false)
     ))
 
+    val issuesSchema = StructType(Array(
+        StructField("id", IntegerType, false),
+        StructField("repo_id", IntegerType, false),
+        StructField("reporter_id", IntegerType, false),
+        StructField("assignee_id", IntegerType, false),
+        StructField("issue_id", StringType, false),
+        StructField("pull_request", ShortType, false),
+        StructField("pull_request_id", IntegerType, false),
+        StructField("created_at", TimestampType, false)
+    ))
+
+    val issueEventsSchema = StructType(Array(
+        StructField("event_id", StringType, false),
+        StructField("issue_id", IntegerType, false),
+        StructField("actor_id", IntegerType, false),
+        StructField("action", StringType, false),
+        StructField("action_specific", StringType, false),
+        StructField("created_at", TimestampType, false)
+    ))
+
     // Load raw data from users.csv, drop unwanted columns and rows with null values.
     private def transformUsersData(spark: SparkSession): Unit = {
         val usersDF = spark.read.format("csv").schema(usersSchema).load(rawDataPath + "users.csv")
@@ -150,18 +170,41 @@ object TransformGithubRaw {
         pullRequestHistoryDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "pull_request_history.csv")
     }
 
+    // Load raw data from issues.csv, drop unwanted columns and rows with null values.
+    private def transformIssuesData(spark: SparkSession): Unit = {
+        val issuesDF = spark.read.format("csv").schema(issuesSchema).load(rawDataPath + "issues.csv")
+        val issuesDF_dropped = issuesDF.drop("reporter_id").drop("assignee_id").drop("pull_request").drop("pull_request_id")
+        val issuesDF_nonull = issuesDF_dropped.na.drop()
+        val issuesDF_cleaned = issuesDF_nonull
+
+        // save cleaned data to hdfs
+        issuesDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "issues.csv")
+    }
+
+    // Load raw data from issue_events.csv, drop unwanted columns and rows with null values.
+    private def transformIssueEventsData(spark: SparkSession): Unit = {
+        val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(rawDataPath + "issue_events.csv")
+        val issueEventsDF_dropped = issueEventsDF.drop("actor_id").drop("action_specific")
+        val issueEventsDF_nonull = issueEventsDF_dropped.na.drop()
+        val issueEventsDF_cleaned = issueEventsDF_nonull
+
+        // save cleaned data to hdfs
+        issueEventsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "issue_events.csv")
+    }
+
     def main(args: Array[String]): Unit = {
         val spark = SparkSession.builder
         .appName("TransformGithubRaw")
         .getOrCreate()
         
-        transformUsersData(spark)
-        transformProjectsData(spark)
-        transformProjectLangData(spark)
-        transformPullRequestData(spark)
-        transformCommitsData(spark)
-        transformPullRequestHistoryData(spark)
-        
+        // transformUsersData(spark)
+        // transformProjectsData(spark)
+        // transformProjectLangData(spark)
+        // transformPullRequestData(spark)
+        // transformCommitsData(spark)
+        // transformPullRequestHistoryData(spark)
+        transformIssuesData(spark)
+        transformIssueEventsData(spark)
     }
 
 }
