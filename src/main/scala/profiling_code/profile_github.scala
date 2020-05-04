@@ -227,13 +227,13 @@ object ProfileGithub {
 
         val idStatsDF = getStatsForCol(spark, issuesDF, "id")
         val ridStatsDF = getStatsForCol(spark, issuesDF, "repo_id")
-        val createdAtStatsDF = getStatsForCol(spark, issuesDF, "created_at")
+        val yearStatsDF = getStatsForCol(spark, issuesDF, "year")
         val iidStatsDF = getStatsForCol(spark, issuesDF, "issue_id")
 
         val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
         val df1 = emptyDF.union(idStatsDF)
         val df2 = df1.union(ridStatsDF)
-        val df3 = df2.union(createdAtStatsDF)
+        val df3 = df2.union(yearStatsDF)
         val finalDF = df3.union(iidStatsDF)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "issues_stats.csv")
@@ -246,13 +246,13 @@ object ProfileGithub {
         val eidStatsDF = getStatsForCol(spark, issueEventsDF, "event_id")
         val iidStatsDF = getStatsForCol(spark, issueEventsDF, "issue_id")
         val actionStatsDF = getStatsForCol(spark, issueEventsDF, "action")
-        val createdAtStatsDF = getStatsForCol(spark, issueEventsDF, "created_at")
+        val yearStatsDF = getStatsForCol(spark, issueEventsDF, "year")
 
         val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
         val df1 = emptyDF.union(eidStatsDF)
         val df2 = df1.union(iidStatsDF)
         val df3 = df2.union(actionStatsDF)
-        val finalDF = df3.union(createdAtStatsDF)
+        val finalDF = df3.union(yearStatsDF)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "issue_events_stats.csv")
     }

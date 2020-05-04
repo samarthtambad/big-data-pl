@@ -64,7 +64,7 @@ object AnalyzeGithub {
     val issuesSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("repo_id", IntegerType, false),
-        StructField("created_at", TimestampType, false),
+        StructField("year", IntegerType, false),
         StructField("issue_id", StringType, false)
     ))
 
@@ -72,7 +72,7 @@ object AnalyzeGithub {
         StructField("event_id", StringType, false),
         StructField("issue_id", IntegerType, false),
         StructField("action", StringType, false),
-        StructField("created_at", TimestampType, false)
+        StructField("year", IntegerType, false)
     ))
 
     private def joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
