@@ -175,7 +175,7 @@ object TransformGithubRaw {
         val issuesDF = spark.read.format("csv").schema(issuesSchema).load(rawDataPath + "issues.csv")
         val issuesDF_dropped = issuesDF.drop("reporter_id").drop("assignee_id").drop("pull_request").drop("pull_request_id")
         val issuesDF_nonull = issuesDF_dropped.na.drop()
-        val issuesDF_cleaned = issuesDF_nonull
+        val issuesDF_cleaned = issuesDF_nonull.withColumn("year", split(col("created_at"), "-")(0)).drop("created_at")
 
         // save cleaned data to hdfs
         issuesDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "issues.csv")
@@ -186,7 +186,7 @@ object TransformGithubRaw {
         val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(rawDataPath + "issue_events.csv")
         val issueEventsDF_dropped = issueEventsDF.drop("actor_id").drop("action_specific")
         val issueEventsDF_nonull = issueEventsDF_dropped.na.drop()
-        val issueEventsDF_cleaned = issueEventsDF_nonull
+        val issueEventsDF_cleaned = issueEventsDF_nonull.withColumn("year", split(col("created_at"), "-")(0)).drop("created_at")
 
         // save cleaned data to hdfs
         issueEventsDF_cleaned.write.format("csv").mode("overwrite").save(cleanedDataPath + "issue_events.csv")
