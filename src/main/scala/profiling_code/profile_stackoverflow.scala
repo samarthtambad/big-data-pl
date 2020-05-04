@@ -87,8 +87,8 @@ object ProfileStackOverflow {
             case StringType => df.agg(min(length(col(colName))), max(length(col(colName)))).head()
             case _ => df.agg(min(colName), max(colName)).head()
         }
-        val colMin: Long = minMax.getInt(0)
-        val colMax: Long = minMax.getInt(1)
+        val colMin: Long = minMax.getLong(0)
+        val colMax: Long = minMax.getLong(1)
         val numDistinct: Long = df.agg(countDistinct(colName)).head().getLong(0)
 
         val newRow = Seq(Row(colName, colType, numRows, numNulls, numSpaces, numBlanks, countProper, colMin, colMax, numDistinct))
