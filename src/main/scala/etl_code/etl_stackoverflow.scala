@@ -24,7 +24,7 @@ object TransformStackOverflowRaw {
 
     private def transformPostsData(spark: SparkSession): Unit = {
         //Load data
-        var df = spark.read.option("rootTag", "posts").option("rowTag", "row").load(rawDataPath + "Posts_small.xml")
+        var df = spark.read.option("rootTag", "posts").option("rowTag", "row").xml(rawDataPath + "Posts_small.xml")
         
         //Cast types
         df = df.withColumn("_CreationDate", col("_CreationDate").cast("timestamp"))
