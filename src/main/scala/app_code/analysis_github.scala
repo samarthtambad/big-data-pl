@@ -75,6 +75,13 @@ object AnalyzeGithub {
         StructField("year", IntegerType, false)
     ))
 
+    val metricsSchema = StructType(Array(
+        StructField("year", IntegerType, false),
+        StructField("language", StringType, false),
+        StructField("metric", IntegerType, false)
+    ))
+    
+
     private def joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
         val joinedDF = df1.join(df2, colName)
         joinedDF.write.format("csv").mode("overwrite").save(baseSavePath + outFileName)
@@ -213,6 +220,25 @@ object AnalyzeGithub {
         numPendingIssues.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName) 
     }
 
+    // join individual metrics computed in seperate functions into one df
+    // grouped by year and programming language
+    private def computeFinalMetrics(spark: SparkSession, outFileName: String): Unit = {
+        val numProjectsDF = spark.read.format("csv").option("header", "true").schema(metricsSchema).load(baseSavePath + "time_num_projects.csv").withColumn("num_projects", col("metric")).drop("metric")
+        val numCommitsDF = spark.read.format("csv").option("header", "true").schema(metricsSchema).load(baseSavePath + "time_num_commits.csv").withColumn("num_commits", col("metric")).drop("metric")
+        val numUsersDF = spark.read.format("csv").option("header", "true").schema(metricsSchema).load(baseSavePath + "time_num_users.csv").withColumn("num_users", col("metric")).drop("metric")
+        val numPullReqDF = spark.read.format("csv").option("header", "true").schema(metricsSchema).load(baseSavePath + "time_num_pull_req.csv").withColumn("num_pull_req", col("metric")).drop("metric")
+        val numPendingIssuesDF = spark.read.format("csv").option("header", "true").schema(metricsSchema).load(baseSavePath + "time_num_pending_issues.csv").withColumn("num_pending_issues", col("metric")).drop("metric")
+
+        // join all df by (year, language)
+        val joinedDF1 = numProjectsDF.join(numCommitsDF, Seq("year", "language"))
+        val joinedDF2 = joinedDF1.join(numUsersDF, Seq("year", "language"))
+        val joinedDF3 = joinedDF2.join(numPullReqDF, Seq("year", "language"))
+        val finalMetricsDF = joinedDF3.join(numPendingIssuesDF, Seq("year", "language"))
+
+        // save computed data to hdfs
+        finalMetricsDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
+    }
+
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder.appName("AnalyzeGithub").getOrCreate()
 
@@ -229,8 +255,8 @@ object AnalyzeGithub {
         // computeNumCommits(spark, "time_num_commits.csv")
         // computeNumUsers(spark, "time_num_users.csv")
         // computeNumPullRequests(spark, "time_num_pull_req.csv")
-        computeNumPendingIssues(spark, "time_num_pending_issues.csv")
-
+        // computeNumPendingIssues(spark, "time_num_pending_issues.csv")
+        computeFinalMetrics(spark, "github_final_metrics.csv")
     }
 
 }
