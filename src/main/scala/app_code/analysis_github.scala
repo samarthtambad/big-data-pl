@@ -199,7 +199,7 @@ object AnalyzeGithub {
         issueEventsDF.cache()
 
         // filter only issue close events
-        val issueEventsDF_filtered = issueEventsDF.filter(issueEventsDF("action") == "closed").drop("action")
+        val issueEventsDF_filtered = issueEventsDF.filter(issueEventsDF("action") === "closed").drop("action")
 
         // remove rows in issues that match issue_id in issue_events
         val pendingIssuesDF = issuesDF.join(issueEventsDF_filtered, Seq("issue_id"), "left_anti")
