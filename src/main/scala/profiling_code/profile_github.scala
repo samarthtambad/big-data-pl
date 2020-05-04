@@ -64,12 +64,12 @@ object ProfileGithub {
     val issuesSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("repo_id", IntegerType, false),
-        StructField("issue_id", StringType, false),
+        StructField("issue_id", IntegerType, false),
         StructField("year", IntegerType, false)
     ))
 
     val issueEventsSchema = StructType(Array(
-        StructField("event_id", StringType, false),
+        StructField("event_id", IntegerType, false),
         StructField("issue_id", IntegerType, false),
         StructField("action", StringType, false),
         StructField("year", IntegerType, false)

@@ -64,8 +64,8 @@ object AnalyzeGithub {
     val issuesSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("repo_id", IntegerType, false),
-        StructField("year", IntegerType, false),
         StructField("issue_id", StringType, false)
+        StructField("year", IntegerType, false),
     ))
 
     val issueEventsSchema = StructType(Array(
@@ -189,7 +189,7 @@ object AnalyzeGithub {
         val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
         val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
 
-        
+        // 
     }
 
     def main(args: Array[String]): Unit = {
