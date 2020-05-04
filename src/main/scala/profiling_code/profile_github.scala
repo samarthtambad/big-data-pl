@@ -234,7 +234,7 @@ object ProfileGithub {
         val df1 = emptyDF.union(idStatsDF)
         val df2 = df1.union(ridStatsDF)
         val df3 = df2.union(createdAtStatsDF)
-        val finalDF = df4.union(iidStatsDF)
+        val finalDF = df3.union(iidStatsDF)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "issues_stats.csv")
     }
@@ -252,7 +252,7 @@ object ProfileGithub {
         val df1 = emptyDF.union(eidStatsDF)
         val df2 = df1.union(iidStatsDF)
         val df3 = df2.union(actionStatsDF)
-        val finalDF = df4.union(createdAtStatsDF)
+        val finalDF = df3.union(createdAtStatsDF)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "issue_events_stats.csv")
     }
