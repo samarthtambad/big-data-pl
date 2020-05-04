@@ -64,7 +64,7 @@ object ProfileGithub {
     val issuesSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("repo_id", IntegerType, false),
-        StructField("created_at", TimestampType, false),
+        StructField("year", IntegerType, false),
         StructField("issue_id", StringType, false)
     ))
 
@@ -72,7 +72,7 @@ object ProfileGithub {
         StructField("event_id", StringType, false),
         StructField("issue_id", IntegerType, false),
         StructField("action", StringType, false),
-        StructField("created_at", TimestampType, false)
+        StructField("year", IntegerType, false)
     ))
 
     // reference for design of profiling df schema
