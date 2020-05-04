@@ -86,10 +86,10 @@ object TransformGithubRaw {
         StructField("repo_id", IntegerType, false),
         StructField("reporter_id", IntegerType, false),
         StructField("assignee_id", IntegerType, false),
-        StructField("issue_id", StringType, false),
         StructField("pull_request", ShortType, false),
         StructField("pull_request_id", IntegerType, false),
-        StructField("created_at", TimestampType, false)
+        StructField("created_at", TimestampType, false),
+        StructField("issue_id", StringType, false)
     ))
 
     val issueEventsSchema = StructType(Array(
