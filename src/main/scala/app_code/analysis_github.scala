@@ -189,7 +189,7 @@ object AnalyzeGithub {
         val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
         val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
 
-
+        
     }
 
     def main(args: Array[String]): Unit = {
