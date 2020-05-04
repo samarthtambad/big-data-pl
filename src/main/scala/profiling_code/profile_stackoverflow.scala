@@ -36,27 +36,27 @@ object ProfileStackOverflow {
     */
 
     val postsSchema = StructType(Array(
-        StructField("_AcceptedAnswerId", LongType, true),
-        StructField("_AnswerCount", LongType, true),
+        StructField("_AcceptedAnswerId", IntegerType, true),
+        StructField("_AnswerCount", IntegerType, true),
         StructField("_Body", StringType, true),
         StructField("_ClosedDate", TimestampType, true), 
-        StructField("_CommentCount", LongType, true),
+        StructField("_CommentCount", IntegerType, true),
         StructField("_CommunityOwnedDate", TimestampType, true), 
         StructField("_CreationDate", TimestampType, true), 
-        StructField("_FavoriteCount", LongType, true),
-        StructField("_Id", LongType, true),
+        StructField("_FavoriteCount", IntegerType, true),
+        StructField("_Id", IntegerType, true),
         StructField("_LastActivityDate", TimestampType, true), 
         StructField("_LastEditDate", TimestampType, true),
         StructField("_LastEditorDisplayName", StringType, true),
-        StructField("_LastEditorUserId", LongType, true),
+        StructField("_LastEditorUserId", IntegerType, true),
         StructField("_OwnerDisplayName", StringType, true), 
-        StructField("_OwnerUserId", LongType, true), 
-        StructField("_ParentId", LongType, true), 
-        StructField("_Score", LongType, true),
+        StructField("_OwnerUserId", IntegerType, true), 
+        StructField("_ParentId", IntegerType, true), 
+        StructField("_Score", IntegerType, true),
         StructField("_Tags", StringType, true),
         StructField("_Title", StringType, true), 
-        StructField("_ViewCount", LongType, true), 
-        StructField("_PostTypeId", LongType, true), 
+        StructField("_ViewCount", IntegerType, true), 
+        StructField("_PostTypeId", IntegerType, true), 
         StructField("_Tag", StringType, true), 
         StructField("_CreationYear", IntegerType, true)
     )) 
@@ -87,8 +87,8 @@ object ProfileStackOverflow {
             case StringType => df.agg(min(length(col(colName))), max(length(col(colName)))).head()
             case _ => df.agg(min(colName), max(colName)).head()
         }
-        val colMin: Long = minMax.getLong(0)
-        val colMax: Long = minMax.getLong(1)
+        val colMin: Int = minMax.getInt(0)
+        val colMax: Int = minMax.getInt(1)
         val numDistinct: Long = df.agg(countDistinct(colName)).head().getLong(0)
 
         val newRow = Seq(Row(colName, colType, numRows, numNulls, numSpaces, numBlanks, countProper, colMin, colMax, numDistinct))
