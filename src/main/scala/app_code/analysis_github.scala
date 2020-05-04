@@ -61,6 +61,20 @@ object AnalyzeGithub {
         StructField("year", IntegerType, false)
     ))
 
+    val issuesSchema = StructType(Array(
+        StructField("id", IntegerType, false),
+        StructField("repo_id", IntegerType, false),
+        StructField("created_at", TimestampType, false),
+        StructField("issue_id", StringType, false)
+    ))
+
+    val issueEventsSchema = StructType(Array(
+        StructField("event_id", StringType, false),
+        StructField("issue_id", IntegerType, false),
+        StructField("action", StringType, false),
+        StructField("created_at", TimestampType, false)
+    ))
+
     private def joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
         val joinedDF = df1.join(df2, colName)
         joinedDF.write.format("csv").mode("overwrite").save(baseSavePath + outFileName)
@@ -170,6 +184,14 @@ object AnalyzeGithub {
         numPullRequest.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)   
     }
 
+    // save number of pending issues (not yet closed) per language per year
+    private def computeNumIssues(spark: SparkSession, outFileName: String): Unit = {
+        val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
+        val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
+
+
+    }
+
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder.appName("AnalyzeGithub").getOrCreate()
 
@@ -179,6 +201,8 @@ object AnalyzeGithub {
         // val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv")
         // val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
         // val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv")
+        // val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
+        // val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
 
         // computeNumProjects(spark, "time_num_projects.csv")
         // computeNumCommits(spark, "time_num_commits.csv")

@@ -94,7 +94,10 @@ object ProfileGithub {
     def getStatsForCol(spark: SparkSession, df: DataFrame, colName: String): DataFrame = {
         val colType: String = df.schema(colName).dataType.toString
         val numRows: Long = df.count()
-        val numNulls: Long = df.filter(df(colName).isNull || df(colName).isNaN).count()
+        val numNulls: Long = df.schema(colName).dataType match {
+            case TimestampType => 0
+            case _ => df.filter(df(colName).isNull || df(colName).isNaN).count()
+        }
         val numSpaces: Long = df.filter(df(colName) === " ").count()
         val numBlanks: Long = df.filter(df(colName) === "").count()
         val countProper: Long = numRows - numNulls - numSpaces - numBlanks
