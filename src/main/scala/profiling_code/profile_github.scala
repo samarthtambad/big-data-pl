@@ -6,34 +6,17 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.DataFrame
 
+/**
+  * Data: Github
+  * Source: https://ghtorrent.org/downloads.html
+  * Size: 102 GB
+  * Schema: https://ghtorrent.org/files/schema.pdf
+  */
 object ProfileGithub {
-    /* 
-     *  Data: Github
-     *  Source: https://ghtorrent.org/downloads.html
-     *  Size: 102 GB
-     *  Schema: https://ghtorrent.org/files/schema.pdf
-    */
 
     // define path to data
     val basePath: String = "project/data/cleaned/"
     val baseSavePath: String = "project/data/stats/"
-
-    /* 
-        Profile Info
-        ------------
-        DataFrame: 
-        1. Column Count
-        2. Row Count
-
-        Integer data columns:
-        1. Max, Min
-        2. Distinct
-
-        String data columns:
-        1. MaxLen, MinLen
-        2. Distinct Values
-        3. Number of Distinct
-    */
 
     val usersSchema = StructType(Array(
         StructField("id", IntegerType, false),
@@ -57,6 +40,14 @@ object ProfileGithub {
         StructField("pull_request_id", IntegerType, false)
     ))
 
+    val pullRequestsHistorySchema = StructType(Array(
+        StructField("id", IntegerType, false),
+        StructField("pull_request_id", IntegerType, false),
+        StructField("action", StringType, false),
+        StructField("actor_id", IntegerType, false),
+        StructField("year", IntegerType, false)
+    ))
+
     val projectsSchema = StructType(Array(
         StructField("id", IntegerType, false),
         StructField("owner_id", IntegerType, false),
@@ -70,7 +61,21 @@ object ProfileGithub {
         StructField("year", IntegerType, false)
     ))
 
-    // reference for design
+    val issuesSchema = StructType(Array(
+        StructField("id", IntegerType, false),
+        StructField("repo_id", IntegerType, false),
+        StructField("issue_id", IntegerType, false),
+        StructField("year", IntegerType, false)
+    ))
+
+    val issueEventsSchema = StructType(Array(
+        StructField("event_id", IntegerType, false),
+        StructField("issue_id", IntegerType, false),
+        StructField("action", StringType, false),
+        StructField("year", IntegerType, false)
+    ))
+
+    // reference for design of profiling df schema
     // https://towardsdatascience.com/profiling-big-data-in-distributed-environment-using-spark-a-pyspark-data-primer-for-machine-78c52d0ce45
     val profileStatsSchema = StructType(Array(
         StructField("col_name", StringType, false),
@@ -85,6 +90,7 @@ object ProfileGithub {
         StructField("num_distinct", LongType, false)
     ))
 
+    // given a df, compute stats for each column and return new df above schema
     def getStatsForCol(spark: SparkSession, df: DataFrame, colName: String): DataFrame = {
         val colType: String = df.schema(colName).dataType.toString
         val numRows: Long = df.count()
@@ -195,14 +201,73 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "project_languages_stats.csv")
     }
 
+    private def profilePullRequestHistoryData(spark: SparkSession): Unit = {
+        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
+        pullRequestHistoryDF.cache()
+        
+        val idStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "id")
+        val pridStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "pull_request_id")
+        val actionStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "action")
+        val aidStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "actor_id")
+        val yearStatsDF = getStatsForCol(spark, pullRequestHistoryDF, "year")
+
+        val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
+        val df1 = emptyDF.union(idStatsDF)
+        val df2 = df1.union(pridStatsDF)
+        val df3 = df2.union(actionStatsDF)
+        val df4 = df3.union(aidStatsDF)
+        val finalDF = df4.union(yearStatsDF)
+
+        finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "pull_request_history_stats.csv")
+    }
+
+    private def profileIssuesData(spark: SparkSession): Unit = {
+        val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
+        issuesDF.cache()
+
+        val idStatsDF = getStatsForCol(spark, issuesDF, "id")
+        val ridStatsDF = getStatsForCol(spark, issuesDF, "repo_id")
+        val iidStatsDF = getStatsForCol(spark, issuesDF, "issue_id")
+        val yearStatsDF = getStatsForCol(spark, issuesDF, "year")
+
+        val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
+        val df1 = emptyDF.union(idStatsDF)
+        val df2 = df1.union(ridStatsDF)
+        val df3 = df2.union(iidStatsDF)
+        val finalDF = df3.union(yearStatsDF)
+
+        finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "issues_stats.csv")
+    }
+
+    private def profileIssueEventsData(spark: SparkSession): Unit = {
+        val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
+        issueEventsDF.cache()
+
+        val eidStatsDF = getStatsForCol(spark, issueEventsDF, "event_id")
+        val iidStatsDF = getStatsForCol(spark, issueEventsDF, "issue_id")
+        val actionStatsDF = getStatsForCol(spark, issueEventsDF, "action")
+        val yearStatsDF = getStatsForCol(spark, issueEventsDF, "year")
+
+        val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
+        val df1 = emptyDF.union(eidStatsDF)
+        val df2 = df1.union(iidStatsDF)
+        val df3 = df2.union(actionStatsDF)
+        val finalDF = df3.union(yearStatsDF)
+
+        finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "issue_events_stats.csv")
+    }
+
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder.appName("ProfileGithub").getOrCreate()
 
-        profileUsersData(spark)
-        profileProjectsData(spark)
-        profileProjectLangData(spark)
-        profilePullRequestsData(spark)
-        profileCommitsData(spark)
+        // profileUsersData(spark)
+        // profileProjectsData(spark)
+        // profileProjectLangData(spark)
+        // profilePullRequestsData(spark)
+        // profileCommitsData(spark)
+        // profilePullRequestHistoryData(spark)
+        profileIssuesData(spark)
+        profileIssueEventsData(spark)
     }
 
 }
