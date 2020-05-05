@@ -1,8 +1,0 @@
-# Important info
-
-
-## spark UI
-http://babar.es.its.nyu.edu:8088/cluster
-After that find your user under the list of jobs running on the cluster and then click on Application Master at the last column. 
-It will direct you to your spark UI and show the progress of your job
-
