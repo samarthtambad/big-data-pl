@@ -6,12 +6,12 @@ Analysis of the community friendliness of a programming language from Github and
 ### Github
 Size: 102 GB \
 https://ghtorrent.org/ \
-More info [here](https://github.com/samarthtambad/big-data-application-project/blob/master/src/github/README.md)
+More info [here](docs/README.md)
 
 ### StackOverflow
-Size: 120 GB
-https://archive.org/details/stackexchange
-More info [here](https://github.com/samarthtambad/big-data-application-project/blob/master/src/stackoverflow/README.md)
+Size: 120 GB \
+https://archive.org/details/stackexchange \
+More info [here](docs/README.md)
 
 ## File Structure
 ```
@@ -43,7 +43,9 @@ More info [here](https://github.com/samarthtambad/big-data-application-project/b
 The ```data``` folder contains the final computed metrics each for GitHub and StackOverflow.
 
 ## Steps to run
-1. 
+1. [steps](usage.md)
+
+http://babar.es.its.nyu.edu:8088/cluster
 
 ## References
 1. https://en.wikipedia.org/wiki/Measuring_programming_language_popularity
