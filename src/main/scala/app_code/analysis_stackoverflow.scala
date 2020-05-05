@@ -44,7 +44,7 @@ object AnalyzeStackOverflow {
         val questionsDF = df.filter(df("_PostTypeId") === 1)
         //val answersDF = df.filter(df("_PostTypeId") === 2)
         val numberOfQuestions = questionsDF.groupBy("year", "language").agg(count("year") as "so_num_questions").sort(desc("so_num_questions"))
-        val numberOfAnswers = answersDF.groupBy("year", "language").agg(sum("_AnswerCount") as "so_num_answers").sort(desc("so_num_answers"))
+        val numberOfAnswers = df.groupBy("year", "language").agg(sum("_AnswerCount") as "so_num_answers").sort(desc("so_num_answers"))
         
         val numberOfUsers = df.groupBy("year", "language", "_OwnerUserId").agg(count("_OwnerUserId") as "so_num_users_").sort(desc("so_num_users"))
         val numUsers = numberOfUsers.groupBy("year", "language").agg(sum("so_num_users") as "so_num_users_by_yl").sort(desc("so_num_users_by_yl"))
