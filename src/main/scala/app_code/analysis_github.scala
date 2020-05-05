@@ -16,7 +16,7 @@ object AnalyzeGithub {
 
     // define path to data 
     val basePath: String = "project/data/cleaned/"
-    val baseSavePath: String = "project/data/analysis_new/"
+    val baseSavePath: String = "project/data/analysis/"
 
     val usersSchema = StructType(Array(
         StructField("id", IntegerType, false),
@@ -84,12 +84,6 @@ object AnalyzeGithub {
     val languagesSchema = StructType(Array(
         StructField("language", StringType, false)
     ))
-
-    private def joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
-        val joinedDF = df1.join(df2, colName)
-        joinedDF.write.format("csv").mode("overwrite").save(baseSavePath + outFileName)
-        return joinedDF
-    }
 
     // generate a list of top 50 languages to limit the scope
     private def computeLanguageList(spark: SparkSession, outFileName: String): Unit = {
@@ -236,22 +230,18 @@ object AnalyzeGithub {
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder.appName("AnalyzeGithub").getOrCreate()
 
+        // restrict to only top 50 popular languages
         val languages = spark.sparkContext.textFile(basePath + "languages_list.csv")
         val languages_array = languages.collect().toList
-        val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year").withColumn("project_id", col("id")).drop("id")//.filter(col("language").isin(languages_array:_*))
-        val projectsDF_withYear = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").withColumn("project_id", col("id")).drop("id")//.filter(col("language").isin(languages_array:_*))
+        val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
+            .drop("owner_id").drop("year").withColumn("project_id", col("id")).drop("id").filter(col("language")
+            .isin(languages_array:_*))
+        val projectsDF_withYear = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
+            .drop("owner_id").withColumn("project_id", col("id")).drop("id").filter(col("language")
+            .isin(languages_array:_*))
 
-        // val usersDF = spark.read.format("csv").schema(usersSchema).load(basePath + "users.csv")
-        // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
-        // val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv")
-        // val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv")
-        // val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
-        // val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv")
-        // val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
-        // val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
-        // val languagesDF = spark.read.format("csv").schema(languagesSchema).load(basePath + "languages_list.csv")
-
-        // computeLanguageList(spark, "languages_list.csv")
+        // compute metrics
+        computeLanguageList(spark, "languages_list.csv")
         computeNumProjects(spark, "time_num_projects.csv", projectsDF_withYear)
         computeNumCommits(spark, "time_num_commits.csv", projectsDF)
         computeNumUsers(spark, "time_num_users.csv", projectsDF)
