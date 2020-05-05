@@ -61,7 +61,6 @@ object AnalyzeStackOverflow {
 
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder.appName("AnalyzeStackOverflow").getOrCreate()
-)
         computeFinalMetrics(spark, "stackoverflow_final_metrics.csv")
     }
 
