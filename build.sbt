@@ -32,6 +32,9 @@ libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.4.0"
 libraryDependencies += "org.apache.spark" % "spark-mllib_2.11" % "2.4.0"
 libraryDependencies += "org.apache.hadoop" % "hadoop-common" % "3.2.0"
 libraryDependencies += "com.databricks" %% "spark-avro" % "4.0.0"
+// https://mvnrepository.com/artifact/com.databricks/spark-xml
+libraryDependencies += "com.databricks" %% "spark-xml" % "0.9.0"
+
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
 // we're adding the cats dependency to the set of dependencies that sbt will go
