@@ -35,12 +35,17 @@ object AnalyzeStackOverflow {
     private def computeFinalMetrics(spark: SparkSession, outFileName: String): Unit = {
         //read the etl file 
         var df = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv/*")
-        df.cache()
 
         df = df.withColumnRenamed("_CreationYear","year")
         df = df.withColumnRenamed("_Tag","language")
         df = df.withColumn("response_time", datediff(df("_ClosedDate"), df("_CreationDate"))/3600)
         
+        val languages = spark.sparkContext.textFile("/user/svt258/project/data/cleaned/" + "languages_list.csv")
+        val languages_array = languages.collect().toList
+        df = df.filter(col("language").isin(languages_array:_*))
+        
+        df.cache()
+
         val questionsDF = df.filter(df("_PostTypeId") === 1)
         //val answersDF = df.filter(df("_PostTypeId") === 2)
         val numberOfQuestions = questionsDF.groupBy("year", "language").agg(count("year") as "so_num_questions").sort(desc("so_num_questions"))
@@ -63,14 +68,14 @@ object AnalyzeStackOverflow {
         averageResponseTime.cache()
 
         // join all df by (year, language)
-        val joinedDF1 = numberOfQuestions.join(numberOfAnswers, Seq("year", "language"))
-        val joinedDF2 = joinedDF1.join(numberOfUsers, Seq("year", "language"))
-        val joinedDF3 = joinedDF2.join(totalScore, Seq("year", "language"))
-        val joinedDF4 = joinedDF3.join(unansweredQuestions, Seq("year", "language"))
-        val finalMetricsDF = joinedDF4.join(averageResponseTime, Seq("year", "language"))
+        val joinedDF1 = numberOfQuestions.join(numberOfAnswers, Seq("year", "language"), "outer")
+        val joinedDF2 = joinedDF1.join(numberOfUsers, Seq("year", "language"), "outer")
+        val joinedDF3 = joinedDF2.join(totalScore, Seq("year", "language"), "outer")
+        val joinedDF4 = joinedDF3.join(unansweredQuestions, Seq("year", "language"), "outer")
+        val finalMetricsDF = joinedDF4.join(averageResponseTime, Seq("year", "language"), "outer")
 
         // save computed data to hdfs
-        finalMetricsDF.write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
+        finalMetricsDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
     }
 
     def main(args: Array[String]): Unit = {
