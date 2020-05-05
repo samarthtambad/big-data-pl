@@ -40,3 +40,9 @@ spark2-submit --packages com.databricks:spark-xml_2.11:0.9.0 --name "SO_ETL_2" -
 
 spark2-submit --name "SAM_ANALYZE_12" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
 
+spark2-submit --name "SAM_ANALYZE_23" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+
+spark2-submit --name "SAM_ANALYZE_14" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 5 target/scala-2.11/big-data-pl_2.11-1.0.jar
+
+# spark shell in cluster mode with many worker nodes
+spark2-shell --name "SAM" --master yarn --deploy-mode client --verbose --driver-memory 5G --executor-memory 2G --num-executors 20
