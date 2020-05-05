@@ -24,7 +24,7 @@ object TransformStackOverflowRaw {
 
     private def transformPostsData(spark: SparkSession): Unit = {
         //Load data
-        var df = spark.read.option("rootTag", "posts").option("rowTag", "row").xml(rawDataPath + "Posts_small.xml")
+        var df = spark.read.option("rootTag", "posts").option("rowTag", "row").xml(rawDataPath + "Posts.xml")
         
         //drop unused columns
         df = df.drop(df.col("_CommunityOwnedDate"))

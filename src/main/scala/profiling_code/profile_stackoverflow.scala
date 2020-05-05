@@ -85,8 +85,8 @@ object ProfileStackOverflow {
         val postsDF = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv")
         postsDF.cache()
         
-        val p1 = getStatsForCol(spark, postsDF, "_ClosedDate")
-        val p2 = getStatsForCol(spark, postsDF, "_CreationDate")
+        //val p1 = getStatsForCol(spark, postsDF, "_ClosedDate")
+        //val p2 = getStatsForCol(spark, postsDF, "_CreationDate")
         val p3 = getStatsForCol(spark, postsDF, "_Id")
         val p4 = getStatsForCol(spark, postsDF, "_OwnerUserId")
         val p5 = getStatsForCol(spark, postsDF, "_PostTypeId")
@@ -96,14 +96,14 @@ object ProfileStackOverflow {
 
 
         val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
-        val df1 = emptyDF.union(p1)
-        val df2 = df1.union(p2)
-        val df3 = df2.union(p3)
+        //val df1 = emptyDF.union(p1)
+        //val df2 = df1.union(p2)
+        val df3 = emptyDF.union(p3)
         val df4 = df3.union(p4)
         val df5 = df4.union(p5)
         val df6 = df5.union(p6)
         val df7 = df6.union(p7)
-        val finalDF = df7.union(p1)
+        val finalDF = df7.union(p8)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "posts_stats.csv")
     }
