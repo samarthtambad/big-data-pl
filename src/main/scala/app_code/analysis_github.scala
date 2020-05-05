@@ -84,9 +84,6 @@ object AnalyzeGithub {
     val languagesSchema = StructType(Array(
         StructField("language", StringType, false)
     ))
-    
-    val languages = spark.sparkContext.textFile(basePath + "languages_list.csv")
-    val languages_array = languages.collect().toList
 
     private def joinAndSave(spark: SparkSession, df1: DataFrame, df2: DataFrame, colName: String, outFileName: String): DataFrame = {
         val joinedDF = df1.join(df2, colName)
