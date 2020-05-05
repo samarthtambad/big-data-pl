@@ -36,7 +36,7 @@ object ProfileStackOverflow {
     */
 
     val postsSchema = StructType(Array(
-        StructField("_AnswerCount", IntegerType, true)
+        StructField("_AnswerCount", IntegerType, true), 
         StructField("_ClosedDate", TimestampType, true), 
         StructField("_CreationDate", TimestampType, true), 
         StructField("_Id", IntegerType, true),
@@ -44,7 +44,7 @@ object ProfileStackOverflow {
         StructField("_PostTypeId", IntegerType, true),
         StructField("_Score", IntegerType, true),
         StructField("_Tag", StringType, true), 
-        StructField("_CreationYear", IntegerType, true), 
+        StructField("_CreationYear", IntegerType, true) 
     )) 
     
     // reference for design
