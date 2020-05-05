@@ -40,12 +40,12 @@ spark2-shell --name "<your job name>"" --master yarn --deploy-mode client --verb
 
 # Examples
 
-### 1. Running test job
+## 1. Running test job
 ```
 spark2-submit --name "TEST" --class test.Test --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/big-data-pl_2.11-1.0.jar
 ```
 
-### 2. Run jobs for Github data
+## 2. Run jobs for Github data
 #### ETL
 ```
 spark2-submit --name "GH_ETL" --class etl.TransformGithubRaw --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
@@ -61,7 +61,7 @@ spark2-submit --name "GH_PROFILE" --class profile.ProfileGithub --master yarn --
 spark2-submit --name "GH_ANALYZE" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
 ```
 
-### 3. Run jobs for StackOverflow data
+## 3. Run jobs for StackOverflow data
 #### ETL
 ```
 spark2-submit --packages com.databricks:spark-xml_2.11:0.9.0 --name "SO_ETL" --class etl.TransformStackOverflowRaw --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
