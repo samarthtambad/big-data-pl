@@ -26,34 +26,41 @@ object TransformStackOverflowRaw {
         //Load data
         var df = spark.read.option("rootTag", "posts").option("rowTag", "row").xml(rawDataPath + "Posts_small.xml")
         
+        //drop unused columns
+        df = df.drop(df.col("_CommunityOwnedDate"))
+        df = df.drop(df.col("_LastActivityDate"))
+        df = df.drop(df.col("_LastEditDate"))
+        df = df.drop(df.col("_LastEditorUserId"))
+        df = df.drop(df.col("_LastEditorDisplayName"))
+        df = df.drop(df.col("_OwnerDisplayName"))
+        df = df.drop(df.col("_Body"))
+        df = df.drop(df.col("_AcceptedAnswerId"))
+        df = df.drop(df.col("_AnswerCount"))
+        df = df.drop(df.col("_CommentCount"))
+        df = df.drop(df.col("_FavoriteCount"))
+        df = df.drop(df.col("_ParentId"))
+        df = df.drop(df.col("_Title"))
+        df = df.drop(df.col("_ViewCount")) 
+
         //Cast types
         df = df.withColumn("_CreationDate", col("_CreationDate").cast("timestamp"))
         df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
-        df = df.withColumn("_CommunityOwnedDate", col("_CommunityOwnedDate").cast("timestamp"))
-        df = df.withColumn("_LastActivityDate", col("_LastActivityDate").cast("timestamp"))
-        df = df.withColumn("_LastEditDate", col("_LastEditDate").cast("timestamp"))
-        df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
-        df = df.withColumn("_ClosedDate", col("_ClosedDate").cast("timestamp"))
+
 
         //cast longs to ints
-        df = df.withColumn("_AcceptedAnswerId", toInt(df("_AcceptedAnswerId")))
-        df = df.withColumn("_AnswerCount", toInt(df("_AnswerCount")))
-        df = df.withColumn("_CommentCount", toInt(df("_CommentCount")))
-        df = df.withColumn("_FavoriteCount", toInt(df("_FavoriteCount")))
+        val toInt    = udf[Int, Long]( _.toInt)
         df = df.withColumn("_Id", toInt(df("_Id")))
-        df = df.withColumn("_LastEditorUserId", toInt(df("_LastEditorUserId")))
-        df = df.withColumn("_OwnerUserId", toInt(df("_OwnerUserId")))
-        df = df.withColumn("_ParentId", toInt(df("_ParentId")))
         df = df.withColumn("_Score", toInt(df("_Score")))
-        df = df.withColumn("_ViewCount", toInt(df("_ViewCount")))
         df = df.withColumn("_PostTypeId", toInt(df("_PostTypeId")))
+        df = df.withColumn("_OwnerUserId", toInt(df("_OwnerUserId")))
 
-        
+
 
         //Clean tags
 	    import spark.implicits._ 
         df = df.withColumn("_Tag", explode(split($"_Tags", "[<]")))
         df = df.withColumn("_Tag", translate(col("_Tag"), ">", ""))
+        df = df.drop(df.col("_Tags"))
 
         //Get languages list
         val languages = spark.sparkContext.textFile("/user/svt258/project/data/cleaned/languages.csv")
