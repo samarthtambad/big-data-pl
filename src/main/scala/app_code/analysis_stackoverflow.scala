@@ -34,29 +34,31 @@ object AnalyzeStackOverflow {
     private def computeFinalMetrics(spark: SparkSession, outFileName: String): Unit = {
         //read the etl file 
         var df = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv")
-        df = df.withColumn("response_time", datediff(df("_ClosedDate"), df("_CreationDate")))
+        df.withColumnRenamed("_CreationYear","year")
+        df.withColumnRenamed("_Tag","language")
+        df = df.withColumn("response_time", datediff(df("_ClosedDate"), df("_CreationDate"))/3600)
         
         val questionsDF = df.filter(df("_PostTypeId") === 1)
         val answersDF = df.filter(df("_PostTypeId") === 2)
-        val numberOfQuestions = questionsDF.groupBy("_CreationYear", "_Tag").agg(count("_Tag") as "num_questions").sort(desc("num_questions"))
-        val numberOfAnswers = answersDF.groupBy("_CreationYear", "_Tag").agg(count("_Tag") as "num_answers").sort(desc("num_answers"))
-        val numberOfUsers = df.groupBy("_CreationYear", "_Tag", "_OwnerUserId").agg(count("_OwnerUserId") as "num_users").sort(desc("num_users"))
-        val totalScore = df.groupBy("_CreationYear", "_Tag").agg(sum("_Score") as "total_score").sort(desc("total_score"))
+        val numberOfQuestions = questionsDF.groupBy("year", "year").agg(count("year") as "so_num_questions").sort(desc("num_questions"))
+        val numberOfAnswers = answersDF.groupBy("year", "year").agg(count("year") as "so_num_answers").sort(desc("num_answers"))
+        val numberOfUsers = df.groupBy("year", "year", "_OwnerUserId").agg(count("_OwnerUserId") as "so_num_users").sort(desc("num_users"))
+        val totalScore = df.groupBy("year", "year").agg(sum("_Score") as "so_total_score").sort(desc("total_score"))
 
         val unansweredQuestionsDF = questionsDF.filter(questionsDF.col("_ClosedDate").isNull)
-        val unansweredQuestions = df.groupBy("_CreationYear", "_Tag").agg(count("_Tag") as "unanswered_questions").sort(desc("unanswered_questions"))
+        val unansweredQuestions = df.groupBy("year", "year").agg(count("year") as "so_unanswered_questions").sort(desc("unanswered_questions"))
 
-        val averageResponseTime = df.groupBy("_CreationYear", "_Tag").agg(avg("response_time") as "avg_response_time").sort(desc("avg_response_time"))
+        val averageResponseTime = df.groupBy("year", "year").agg(avg("response_time") as "so_avg_response_time").sort(desc("avg_response_time"))
 
         // join all df by (year, language)
-        val joinedDF1 = numberOfQuestions.join(numberOfAnswers, Seq("_CreationYear", "_Tag"))
-        val joinedDF2 = joinedDF1.join(numberOfUsers, Seq("_CreationYear", "_Tag"))
-        val joinedDF3 = joinedDF2.join(totalScore, Seq("_CreationYear", "_Tag"))
-        val joinedDF4 = joinedDF3.join(unansweredQuestions, Seq("_CreationYear", "_Tag"))
-        val finalMetricsDF = joinedDF4.join(averageResponseTime, Seq("_CreationYear", "_Tag"))
+        val joinedDF1 = numberOfQuestions.join(numberOfAnswers, Seq("year", "year"))
+        val joinedDF2 = joinedDF1.join(numberOfUsers, Seq("year", "year"))
+        val joinedDF3 = joinedDF2.join(totalScore, Seq("year", "year"))
+        val joinedDF4 = joinedDF3.join(unansweredQuestions, Seq("year", "year"))
+        val finalMetricsDF = joinedDF4.join(averageResponseTime, Seq("year", "year"))
 
         // save computed data to hdfs
-        finalMetricsDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
+        finalMetricsDF.write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
     }
 
     def main(args: Array[String]): Unit = {
