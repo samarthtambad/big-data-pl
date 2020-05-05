@@ -33,7 +33,7 @@ object AnalyzeStackOverflow {
     // grouped by year and programming language
     private def computeFinalMetrics(spark: SparkSession, outFileName: String): Unit = {
         //read the etl file 
-        var df = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv")
+        var df = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv/*")
         df.cache()
 
         df = df.withColumnRenamed("_CreationYear","year")
