@@ -1,0 +1,44 @@
+
+Data Sources
+------------
+
+Github Data
+Source: https://ghtorrent.org/downloads.html
+Size: 102 GB
+-------------------------
+
+Ingest Steps:
+1. login to dumbo
+
+2. create a folder on /scratch/ and cd into it
+
+3. Download the data dump to scratch using:
+wget "http://ghtorrent-downloads.ewi.tudelft.nl/mysql/mysql-2019-06-01.tar.gz"
+
+4. Unzip the tar.gz file using:
+tar -xzf mysql-2019-06-01.tar.gz
+
+5. Copy the extracted folder into HDFS using:
+hdfs dfs -put /scratch/<net_id>/project/mysql-2019-06-01 project/data/raw/
+
+--------------------------
+
+StackOverflow Data
+Source: https://archive.org/details/stackexchange
+Size: 16GB
+--------------------------
+Ingest Steps:
+1. login to dumbo
+
+2. create a folder on /scratch/ and cd into it
+
+3. Download the data dump to scratch using:
+wget "https://archive.org/download/stackexchange/stackoverflow.com-Posts.7z"
+
+4. load module p7zip
+
+5. Unzip the tar.gz file using:
+7z x stackoverflow.com-Posts.7z
+
+6. Copy the extracted folder into HDFS using:
+hdfs dfs -put /scratch/<net_id>/project/stackoverflow.com-Posts project/data/raw/
