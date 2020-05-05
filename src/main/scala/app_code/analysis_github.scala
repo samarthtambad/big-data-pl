@@ -266,8 +266,8 @@ object AnalyzeGithub {
         // val languagesDF = spark.read.format("csv").schema(languagesSchema).load(basePath + "languages_list.csv")
 
 
-        computeNumProjects(spark, "time_num_projects.csv")
-        // computeNumCommits(spark, "time_num_commits.csv")
+        // computeNumProjects(spark, "time_num_projects.csv")
+        computeNumCommits(spark, "time_num_commits.csv")
         // computeNumUsers(spark, "time_num_users.csv")
         // computeNumPullRequests(spark, "time_num_pull_req.csv")
         // computeNumPendingIssues(spark, "time_num_pending_issues.csv")
