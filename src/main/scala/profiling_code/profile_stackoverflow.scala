@@ -36,27 +36,12 @@ object ProfileStackOverflow {
     */
 
     val postsSchema = StructType(Array(
-        StructField("_AcceptedAnswerId", IntegerType, true),
-        StructField("_AnswerCount", IntegerType, true),
-        StructField("_Body", StringType, true),
         StructField("_ClosedDate", TimestampType, true), 
-        StructField("_CommentCount", IntegerType, true),
-        StructField("_CommunityOwnedDate", TimestampType, true), 
         StructField("_CreationDate", TimestampType, true), 
-        StructField("_FavoriteCount", IntegerType, true),
         StructField("_Id", IntegerType, true),
-        StructField("_LastActivityDate", TimestampType, true), 
-        StructField("_LastEditDate", TimestampType, true),
-        StructField("_LastEditorDisplayName", StringType, true),
-        StructField("_LastEditorUserId", IntegerType, true),
-        StructField("_OwnerDisplayName", StringType, true), 
         StructField("_OwnerUserId", IntegerType, true), 
-        StructField("_ParentId", IntegerType, true), 
+        StructField("_PostTypeId", IntegerType, true),
         StructField("_Score", IntegerType, true),
-        StructField("_Tags", StringType, true),
-        StructField("_Title", StringType, true), 
-        StructField("_ViewCount", IntegerType, true), 
-        StructField("_PostTypeId", IntegerType, true), 
         StructField("_Tag", StringType, true), 
         StructField("_CreationYear", IntegerType, true)
     )) 
@@ -100,52 +85,25 @@ object ProfileStackOverflow {
         val postsDF = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv")
         postsDF.cache()
         
-        val p1 = getStatsForCol(spark, postsDF, "_AnswerCount")
-        val p2 = getStatsForCol(spark, postsDF, "_Body")
-        //val p3 = getStatsForCol(spark, postsDF, "_ClosedDate")
-        val p4 = getStatsForCol(spark, postsDF, "_CommentCount")
-        //val p5 = getStatsForCol(spark, postsDF, "_CommunityOwnedDate")
-        //val p6 = getStatsForCol(spark, postsDF, "_CreationDate")
-        val p7 = getStatsForCol(spark, postsDF, "_FavoriteCount")
-        val p8 = getStatsForCol(spark, postsDF, "_Id")
-        //val p9 = getStatsForCol(spark, postsDF, "_LastActivityDate")
-        //val p10 = getStatsForCol(spark, postsDF, "_LastEditDate")
-        val p11 = getStatsForCol(spark, postsDF, "_LastEditorDisplayName")
-        val p12 = getStatsForCol(spark, postsDF, "_LastEditorUserId")
-        val p13 = getStatsForCol(spark, postsDF, "_OwnerDisplayName")
-        val p14 = getStatsForCol(spark, postsDF, "_OwnerUserId")
-        val p15 = getStatsForCol(spark, postsDF, "_ParentId")
-        val p16 = getStatsForCol(spark, postsDF, "_Score")
-        val p17 = getStatsForCol(spark, postsDF, "_Tags")
-        val p18 = getStatsForCol(spark, postsDF, "_Title")
-        val p19 = getStatsForCol(spark, postsDF, "_ViewCount")
-        val p20 = getStatsForCol(spark, postsDF, "_PostTypeId")
-        val p21 = getStatsForCol(spark, postsDF, "_Tag")
-        val p22 = getStatsForCol(spark, postsDF, "_CreationYear")
+        val p1 = getStatsForCol(spark, postsDF, "_ClosedDate")
+        val p2 = getStatsForCol(spark, postsDF, "_CreationDate")
+        val p3 = getStatsForCol(spark, postsDF, "_Id")
+        val p4 = getStatsForCol(spark, postsDF, "_OwnerUserId")
+        val p5 = getStatsForCol(spark, postsDF, "_PostTypeId")
+        val p6 = getStatsForCol(spark, postsDF, "_Score")
+        val p7 = getStatsForCol(spark, postsDF, "_Tag")
+        val p8 = getStatsForCol(spark, postsDF, "_CreationYear")
+
 
         val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
         val df1 = emptyDF.union(p1)
         val df2 = df1.union(p2)
-        //val df3 = df2.union(p3)
-        val df4 = df2.union(p4)
-        //val df5 = df4.union(p5)
-        //val df6 = df5.union(p6)
-        val df7 = df4.union(p7)
-        val df8 = df7.union(p8)
-        //val df9 = df8.union(p9)
-        //val df10 = df9.union(p10)
-        val df11 = df8.union(p11)
-        val df12 = df11.union(p12)
-        val df13 = df12.union(p13)
-        val df14 = df13.union(p14)
-        val df15 = df14.union(p15)
-        val df16 = df15.union(p16)
-        val df17 = df16.union(p17)
-        val df18 = df17.union(p18)
-        val df19 = df18.union(p19)
-        val df20 = df19.union(p20)
-        val df21 = df20.union(p21)
-        val finalDF = df21.union(p1)
+        val df3 = df2.union(p3)
+        val df4 = df3.union(p4)
+        val df5 = df4.union(p5)
+        val df6 = df5.union(p6)
+        val df7 = df6.union(p7)
+        val finalDF = df7.union(p1)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "posts_stats.csv")
     }
