@@ -105,7 +105,7 @@ object ProfileStackOverflow {
         val df5 = df4.union(p5)
         val df6 = df5.union(p6)
         val df7 = df6.union(p7)
-        val df8 = df6.union(p8)
+        val df8 = df7.union(p8)
         val finalDF = df8.union(p9)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "posts_stats.csv")
