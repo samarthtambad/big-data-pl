@@ -40,15 +40,15 @@ object AnalyzeStackOverflow {
         
         val questionsDF = df.filter(df("_PostTypeId") === 1)
         val answersDF = df.filter(df("_PostTypeId") === 2)
-        val numberOfQuestions = questionsDF.groupBy("year", "year").agg(count("year") as "so_num_questions").sort(desc("num_questions"))
-        val numberOfAnswers = answersDF.groupBy("year", "year").agg(count("year") as "so_num_answers").sort(desc("num_answers"))
-        val numberOfUsers = df.groupBy("year", "year", "_OwnerUserId").agg(count("_OwnerUserId") as "so_num_users").sort(desc("num_users"))
-        val totalScore = df.groupBy("year", "year").agg(sum("_Score") as "so_total_score").sort(desc("total_score"))
+        val numberOfQuestions = questionsDF.groupBy("year", "year").agg(count("year") as "so_num_questions").sort(desc("so_num_questions"))
+        val numberOfAnswers = answersDF.groupBy("year", "year").agg(count("year") as "so_num_answers").sort(desc("so_num_answers"))
+        val numberOfUsers = df.groupBy("year", "year", "_OwnerUserId").agg(count("_OwnerUserId") as "so_num_users").sort(desc("so_num_users"))
+        val totalScore = df.groupBy("year", "year").agg(sum("_Score") as "so_total_score").sort(desc("so_total_score"))
 
         val unansweredQuestionsDF = questionsDF.filter(questionsDF.col("_ClosedDate").isNull)
-        val unansweredQuestions = df.groupBy("year", "year").agg(count("year") as "so_unanswered_questions").sort(desc("unanswered_questions"))
+        val unansweredQuestions = df.groupBy("year", "year").agg(count("year") as "so_unanswered_questions").sort(desc("so_unanswered_questions"))
 
-        val averageResponseTime = df.groupBy("year", "year").agg(avg("response_time") as "so_avg_response_time").sort(desc("avg_response_time"))
+        val averageResponseTime = df.groupBy("year", "year").agg(avg("response_time") as "so_avg_response_time").sort(desc("so_avg_response_time"))
 
         // join all df by (year, language)
         val joinedDF1 = numberOfQuestions.join(numberOfAnswers, Seq("year", "year"))
