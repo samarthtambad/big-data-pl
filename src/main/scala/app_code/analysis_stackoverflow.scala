@@ -46,8 +46,7 @@ object AnalyzeStackOverflow {
         val numberOfQuestions = questionsDF.groupBy("year", "language").agg(count("year") as "so_num_questions").sort(desc("so_num_questions"))
         val numberOfAnswers = df.groupBy("year", "language").agg(sum("_AnswerCount") as "so_num_answers").sort(desc("so_num_answers"))
         
-        val numberOfUsers = df.groupBy("year", "language", "_OwnerUserId").agg(count("_OwnerUserId") as "so_num_users_").sort(desc("so_num_users"))
-        val numUsers = numberOfUsers.groupBy("year", "language").agg(sum("so_num_users") as "so_num_users_by_yl").sort(desc("so_num_users_by_yl"))
+        val numberOfUsers = df.groupBy("year", "language").agg(countDistinct("_OwnerUserId") as "so_num_users").sort(desc("so_num_users"))
 
         val totalScore = df.groupBy("year", "language").agg(sum("_Score") as "so_total_score").sort(desc("so_total_score"))
 
@@ -58,14 +57,14 @@ object AnalyzeStackOverflow {
 
         numberOfQuestions.cache()
         numberOfAnswers.cache()
-        numUsers.cache()
+        numberOfUsers.cache()
         totalScore.cache()
         unansweredQuestions.cache()
         averageResponseTime.cache()
 
         // join all df by (year, language)
         val joinedDF1 = numberOfQuestions.join(numberOfAnswers, Seq("year", "language"))
-        val joinedDF2 = joinedDF1.join(numUsers, Seq("year", "language"))
+        val joinedDF2 = joinedDF1.join(numberOfUsers, Seq("year", "language"))
         val joinedDF3 = joinedDF2.join(totalScore, Seq("year", "language"))
         val joinedDF4 = joinedDF3.join(unansweredQuestions, Seq("year", "language"))
         val finalMetricsDF = joinedDF4.join(averageResponseTime, Seq("year", "language"))
