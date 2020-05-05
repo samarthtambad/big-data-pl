@@ -281,10 +281,10 @@ object AnalyzeGithub {
         // computeLanguageList(spark, "languages_list.csv")
         // computeNumProjects(spark, "time_num_projects.csv", projectsDF_withYear)
         // computeNumCommits(spark, "time_num_commits.csv", projectsDF)
-        computeNumUsers(spark, "time_num_users.csv", projectsDF)
-        computeNumPullRequests(spark, "time_num_pull_req.csv", projectsDF)
-        // computeNumPendingIssues(spark, "time_num_pending_issues.csv", projectsDF)
-        // computeFinalMetrics(spark, "github_final_metrics.csv")
+        // computeNumUsers(spark, "time_num_users.csv", projectsDF)
+        // computeNumPullRequests(spark, "time_num_pull_req.csv", projectsDF)
+        computeNumPendingIssues(spark, "time_num_pending_issues.csv", projectsDF)
+        computeFinalMetrics(spark, "github_final_metrics.csv")
     }
 
 }
