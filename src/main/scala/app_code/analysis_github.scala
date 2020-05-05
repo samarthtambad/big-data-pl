@@ -224,10 +224,10 @@ object AnalyzeGithub {
         val numPendingIssuesDF = spark.read.format("csv").option("header", "true").schema(metricsSchema).load(baseSavePath + "time_num_pending_issues.csv").withColumn("num_pending_issues", col("metric")).drop("metric")
 
         // join all df by (year, language)
-        val joinedDF1 = numProjectsDF.join(numCommitsDF, Seq("year", "language"))
-        val joinedDF2 = joinedDF1.join(numUsersDF, Seq("year", "language"))
-        val joinedDF3 = joinedDF2.join(numPullReqDF, Seq("year", "language"))
-        val finalMetricsDF = joinedDF3.join(numPendingIssuesDF, Seq("year", "language"))
+        val joinedDF1 = numProjectsDF.join(numCommitsDF, Seq("year", "language"), "outer")
+        val joinedDF2 = joinedDF1.join(numUsersDF, Seq("year", "language"), "outer")
+        val joinedDF3 = joinedDF2.join(numPullReqDF, Seq("year", "language"), "outer")
+        val finalMetricsDF = joinedDF3.join(numPendingIssuesDF, Seq("year", "language"), "outer")
 
         // save computed data to hdfs
         finalMetricsDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
