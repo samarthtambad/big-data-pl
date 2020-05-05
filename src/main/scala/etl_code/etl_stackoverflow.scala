@@ -35,7 +35,6 @@ object TransformStackOverflowRaw {
         df = df.drop(df.col("_OwnerDisplayName"))
         df = df.drop(df.col("_Body"))
         df = df.drop(df.col("_AcceptedAnswerId"))
-        df = df.drop(df.col("_AnswerCount"))
         df = df.drop(df.col("_CommentCount"))
         df = df.drop(df.col("_FavoriteCount"))
         df = df.drop(df.col("_ParentId"))
@@ -53,7 +52,8 @@ object TransformStackOverflowRaw {
         df = df.withColumn("_Score", toInt(df("_Score")))
         df = df.withColumn("_PostTypeId", toInt(df("_PostTypeId")))
         df = df.withColumn("_OwnerUserId", toInt(df("_OwnerUserId")))
-
+        df = df.withColumn("_AnswerCount", toInt(df("_AnswerCount")))
+        
 
 
         //Clean tags

@@ -6,12 +6,12 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.DataFrame
 
-/** 
-  *  Data: Github
-  *  Source: https://ghtorrent.org/downloads.html
-  *  Size: 102 GB
-  *  Schema: https://ghtorrent.org/files/schema.pdf
-  */
+    /* 
+     *  Data: StackOverflow
+     *  Source: https://archive.org/details/stackexchange
+     *  Size: 16GB
+     *  Schema: https://meta.stackexchange.com/questions/2677/database-schema-documentation-for-the-public-data-dump-and-sede
+    */
 object AnalyzeStackOverflow {
 
     // define path to data 
@@ -26,7 +26,8 @@ object AnalyzeStackOverflow {
         StructField("_PostTypeId", IntegerType, true),
         StructField("_Score", IntegerType, true),
         StructField("_Tag", StringType, true), 
-        StructField("_CreationYear", IntegerType, true)
+        StructField("_CreationYear", IntegerType, true), 
+        StructField("_AnswerCount", IntegerType, true)
     )) 
     
     // join individual metrics computed in seperate functions into one df
@@ -41,10 +42,13 @@ object AnalyzeStackOverflow {
         df = df.withColumn("response_time", datediff(df("_ClosedDate"), df("_CreationDate"))/3600)
         
         val questionsDF = df.filter(df("_PostTypeId") === 1)
-        val answersDF = df.filter(df("_PostTypeId") === 2)
+        //val answersDF = df.filter(df("_PostTypeId") === 2)
         val numberOfQuestions = questionsDF.groupBy("year", "language").agg(count("year") as "so_num_questions").sort(desc("so_num_questions"))
-        val numberOfAnswers = answersDF.groupBy("year", "language").agg(count("year") as "so_num_answers").sort(desc("so_num_answers"))
+        val numberOfAnswers = answersDF.groupBy("year", "language").agg(sum("_AnswerCount") as "so_num_answers").sort(desc("so_num_answers"))
+        
         val numberOfUsers = df.groupBy("year", "language", "_OwnerUserId").agg(count("_OwnerUserId") as "so_num_users").sort(desc("so_num_users"))
+        val numUsers = df.groupBy("year", "language").agg(sum("so_num_users") as "so_num_users").sort(desc("so_num_users"))
+
         val totalScore = df.groupBy("year", "language").agg(sum("_Score") as "so_total_score").sort(desc("so_total_score"))
 
         val unansweredQuestionsDF = questionsDF.filter(questionsDF.col("_ClosedDate").isNull)
@@ -76,3 +80,4 @@ object AnalyzeStackOverflow {
     }
 
 }
+

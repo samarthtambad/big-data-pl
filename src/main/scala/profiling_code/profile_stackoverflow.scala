@@ -43,7 +43,8 @@ object ProfileStackOverflow {
         StructField("_PostTypeId", IntegerType, true),
         StructField("_Score", IntegerType, true),
         StructField("_Tag", StringType, true), 
-        StructField("_CreationYear", IntegerType, true)
+        StructField("_CreationYear", IntegerType, true), 
+        StructField("_AnswerCount", IntegerType, true)
     )) 
     
     // reference for design
@@ -82,7 +83,7 @@ object ProfileStackOverflow {
     }
 
     private def profilePostsData(spark: SparkSession): Unit = {
-        val postsDF = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv")
+        val postsDF = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv/*")
         postsDF.cache()
         
         //val p1 = getStatsForCol(spark, postsDF, "_ClosedDate")
@@ -93,6 +94,7 @@ object ProfileStackOverflow {
         val p6 = getStatsForCol(spark, postsDF, "_Score")
         val p7 = getStatsForCol(spark, postsDF, "_Tag")
         val p8 = getStatsForCol(spark, postsDF, "_CreationYear")
+        val p9 = getStatsForCol(spark, postsDF, "_AnswerCount")
 
 
         val emptyDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], profileStatsSchema)
@@ -103,7 +105,8 @@ object ProfileStackOverflow {
         val df5 = df4.union(p5)
         val df6 = df5.union(p6)
         val df7 = df6.union(p7)
-        val finalDF = df7.union(p8)
+        val df8 = df6.union(p8)
+        val finalDF = df8.union(p9)
 
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "posts_stats.csv")
     }
