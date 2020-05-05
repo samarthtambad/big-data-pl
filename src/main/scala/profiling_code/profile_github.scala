@@ -111,6 +111,7 @@ object ProfileGithub {
         return newRowDF
     }
 
+    // perform profiling for users data and save it
     private def profileUsersData(spark: SparkSession): Unit = {
         val usersDF = spark.read.format("csv").schema(usersSchema).load(basePath + "users.csv")
         usersDF.cache()
@@ -125,6 +126,7 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "users_stats.csv")
     }
 
+    // perform profiling for commits data and save it
     private def profileCommitsData(spark: SparkSession): Unit = {
         val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv")
         commitsDF.cache()
@@ -145,6 +147,7 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "commits_stats.csv")
     }
 
+    // perform profiling for pull_requests data and save it
     private def profilePullRequestsData(spark: SparkSession): Unit = {
         val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv")
         pullRequestsDF.cache()
@@ -167,6 +170,7 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "pull_requests_stats.csv")
     }
 
+    // perform profiling for projects data and save it
     private def profileProjectsData(spark: SparkSession): Unit = {
         val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
         projectsDF.cache()
@@ -185,6 +189,7 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "projects_stats.csv")
     }
 
+    // perform profiling for project_languages data and save it
     private def profileProjectLangData(spark: SparkSession): Unit = {
         val projectLanguagesDF = spark.read.format("csv").schema(projectLanguagesSchema).load(basePath + "project_languages.csv")
         projectLanguagesDF.cache()
@@ -201,6 +206,7 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "project_languages_stats.csv")
     }
 
+    // perform profiling for pull_request_history data and save it
     private def profilePullRequestHistoryData(spark: SparkSession): Unit = {
         val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
         pullRequestHistoryDF.cache()
@@ -221,6 +227,7 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "pull_request_history_stats.csv")
     }
 
+    // perform profiling for issues data and save it
     private def profileIssuesData(spark: SparkSession): Unit = {
         val issuesDF = spark.read.format("csv").schema(issuesSchema).load(basePath + "issues.csv")
         issuesDF.cache()
@@ -239,6 +246,7 @@ object ProfileGithub {
         finalDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "issues_stats.csv")
     }
 
+    // perform profiling for issue_events data and save it
     private def profileIssueEventsData(spark: SparkSession): Unit = {
         val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
         issueEventsDF.cache()
@@ -260,12 +268,13 @@ object ProfileGithub {
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder.appName("ProfileGithub").getOrCreate()
 
-        // profileUsersData(spark)
-        // profileProjectsData(spark)
-        // profileProjectLangData(spark)
-        // profilePullRequestsData(spark)
-        // profileCommitsData(spark)
-        // profilePullRequestHistoryData(spark)
+        // perform profiling one table (csv file) at a time
+        profileUsersData(spark)
+        profileProjectsData(spark)
+        profileProjectLangData(spark)
+        profilePullRequestsData(spark)
+        profileCommitsData(spark)
+        profilePullRequestHistoryData(spark)
         profileIssuesData(spark)
         profileIssueEventsData(spark)
     }
