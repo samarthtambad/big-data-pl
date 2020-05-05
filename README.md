@@ -4,23 +4,46 @@ Analysis of the community friendliness of a programming language from Github and
 ## Data Sources
 
 ### Github
-Size: 102 GB
-https://ghtorrent.org/
-
-More info about the structure of raw data and processing steps [here](https://github.com/samarthtambad/big-data-application-project/blob/master/src/github/README.md)
-
-##### Schema
-
+Size: 102 GB \
+https://ghtorrent.org/ \
+More info [here](https://github.com/samarthtambad/big-data-application-project/blob/master/src/github/README.md)
 
 ### StackOverflow
 Size: 120 GB
 https://archive.org/details/stackexchange
+More info [here](https://github.com/samarthtambad/big-data-application-project/blob/master/src/stackoverflow/README.md)
 
-More info about the structure of raw data and processing steps [here](https://github.com/samarthtambad/big-data-application-project/blob/master/src/stackoverflow/README.md)
+## File Structure
+```
+.
+├── build.sbt
+├── data
+│   ├── github_final_metrics.csv
+│   └── stackoverflow_final_metrics.csv
+├── src
+│   └── main
+│       └── scala
+│           ├── app_code
+│           │   ├── analysis_github.scala
+│           │   └── analysis_stackoverflow.scala
+│           ├── etl_code
+│           │   ├── etl_github.scala
+│           │   └── etl_stackoverflow.scala
+│           ├── profiling_code
+│           │   ├── profile_github.scala
+│           │   └── profile_stackoverflow.scala
+│           └── test_code
+│               └── test.scala
+├── steps.txt
+├── README.md
+└── visualization
+    ├── final.twb
+    └── github_final_metrics+.hyper
+```
+The ```data``` folder contains the final computed metrics each for GitHub and StackOverflow.
 
-##### Schema
-
-
+## Steps to run
+1. 
 
 ## References
 1. https://en.wikipedia.org/wiki/Measuring_programming_language_popularity
