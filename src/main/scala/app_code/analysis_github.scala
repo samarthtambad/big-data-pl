@@ -16,7 +16,7 @@ object AnalyzeGithub {
 
     // define path to data 
     val basePath: String = "project/data/cleaned/"
-    val baseSavePath: String = "project/data/analysis/"
+    val baseSavePath: String = "project/data/analysis_new/"
 
     val usersSchema = StructType(Array(
         StructField("id", IntegerType, false),
@@ -101,10 +101,7 @@ object AnalyzeGithub {
     // save number of projects per language per year
     private def computeNumProjects(spark: SparkSession, outFileName: String, projectsDF: DataFrame): Unit = {
         val languagesDF = spark.read.format("csv").schema(languagesSchema).load(basePath + "languages_list.csv")
-        // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").join(languagesDF, Seq("language"), "left_anti")
-        val numProjectsDF = projectsDF.groupBy("year", "language").agg(count("language") as "num_projects").sort(desc("num_projects"))
-        
-        // numProjectsDF.show(10)
+        val numProjectsDF = projectsDF.groupBy("year", "language").agg(count("language") as "num_projects").sort(desc("num_projects"))  // rows = 577
         
         // save computed data to hdfs
         numProjectsDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
@@ -114,8 +111,6 @@ object AnalyzeGithub {
     private def computeNumCommits(spark: SparkSession, outFileName: String, projectsDF: DataFrame): Unit = {
         val languagesDF = spark.read.format("csv").schema(languagesSchema).load(basePath + "languages_list.csv")
         val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv").drop("author_id").drop("committer_id")
-        // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year")
-        //     .withColumn("project_id", col("id")).drop("id").join(languagesDF, Seq("language"), "left_anti")
         
         commitsDF.cache()
         projectsDF.cache()
@@ -123,20 +118,12 @@ object AnalyzeGithub {
         // there are many commits per project. reduce by number of commits per project
         // this command reduces the number of rows by a factor of 100. (necessary as next step is a join)
         val commitsReducedDF = commitsDF.groupBy("year", "project_id").agg(count("id") as "num_commits")
-        // commitsReducedDF.write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "commits_reduced.csv")
-        // commitsReducedDF.show(10)
 
         // join commits and project_languages by project_id. 
         val joinedDF = commitsReducedDF.join(projectsDF, "project_id")
-        // joinedDF.write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "join_projectlang_commits.csv")
-        // joinedDF.show(10)
-
         val numCommitsProjectDF = joinedDF.groupBy("project_id", "year", "language").agg(sum("num_commits") as "num_commits")
-        // numCommitsProjectDF.write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + "commits_per_project.csv")
-        // numCommitsProjectDF.show(10)
 
-        val numCommitsDF = numCommitsProjectDF.groupBy("year", "language").agg(sum("num_commits") as "num_commits").sort(desc("num_commits"))
-        // numCommitsDF.show(10)
+        val numCommitsDF = numCommitsProjectDF.groupBy("year", "language").agg(sum("num_commits") as "num_commits").sort(desc("num_commits"))   // rows = 630
 
         // save computed data to hdfs
         numCommitsDF.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
@@ -144,16 +131,9 @@ object AnalyzeGithub {
 
     // save number of users per language per year
     private def computeNumUsers(spark: SparkSession, outFileName: String, projectsDF: DataFrame): Unit = {
-        val languagesDF = spark.read.format("csv").schema(languagesSchema).load(basePath + "languages_list.csv")
-        val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv").drop("id").drop("committer_id")
-            .withColumn("user_id", col("author_id")).drop("author_id")
-        // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year")
-        //     .withColumn("project_id", col("id")).drop("id").join(languagesDF, Seq("language"), "left_anti")
-        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
-            .drop("id").withColumn("user_id", col("actor_id")).drop("actor_id")
-        val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv").drop("head_repo_id")
-            .drop("head_commit_id").drop("base_commit_id").drop("pull_request_id").withColumn("pull_request_id", col("id")).drop("id")
-            .withColumn("project_id", col("base_repo_id")).drop("base_repo_id")
+        val commitsDF = spark.read.format("csv").schema(commitsSchema).load(basePath + "commits.csv").drop("id").drop("committer_id").withColumn("user_id", col("author_id")).drop("author_id")
+        val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv").drop("id").withColumn("user_id", col("actor_id")).drop("actor_id")
+        val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv").drop("head_repo_id").drop("head_commit_id").drop("base_commit_id").drop("pull_request_id").withColumn("pull_request_id", col("id")).drop("id").withColumn("project_id", col("base_repo_id")).drop("base_repo_id")
         
         commitsDF.cache()
         projectsDF.cache()
@@ -161,28 +141,27 @@ object AnalyzeGithub {
         pullRequestHistoryDF.cache()
 
         // join pull_request_history with pull_requests to link user_id with project_id for open pull request events
-        val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(pullRequestHistoryDF("action") === "opened").drop("action")  // only looking at pull request open event
+        val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(pullRequestHistoryDF("action") === "opened").drop("action")
         val pullRequestJoinedDF = pullRequestHistoryDF_filtered.join(pullRequestsDF, "pull_request_id").drop("pull_request_id")
-        val pullRequestJoinedDF_reduced = pullRequestJoinedDF.distinct()
+        val pullRequestJoinedDF_reduced = pullRequestJoinedDF.distinct().select("year", "user_id", "project_id")    // rows = 16892023, cols = (year, user_id, project_id)
 
-        // reduce commits to only unique (user_id, project_id, year) rows
-        val commitsDF_reduced = commitsDF.distinct()
+        // unique (user_id, project_id, year)  rows
+        val commitsDF_reduced = commitsDF.distinct().select("year", "user_id", "project_id")    // rows = 116977310, cols = (year, user_id, project_id)
 
-        // both commits and pull requests df are now of the form (user_id, project_id, year)
-        // combine both df using union
-        val userActivityDF = pullRequestJoinedDF_reduced.union(commitsDF_reduced)
+        // combine both commits and pull requests df using union
+        val userActivityDF = pullRequestJoinedDF_reduced.union(commitsDF_reduced)   // rows = 133869333, cols = (year, user_id, project_id)
 
         // reduce to only unique values
-        val userActivityDF_reduced = userActivityDF.distinct()
+        val userActivityDF_reduced = userActivityDF.distinct()  // rows = 124338394, cols = (year, user_id, project_id)
 
         // join with projects to link user activity to a language
-        val userLanguageActivityDF = userActivityDF_reduced.join(projectsDF, "project_id").drop("project_id")
+        val userLanguageActivityDF = userActivityDF_reduced.join(projectsDF, "project_id").drop("project_id")   // rows = 66318766, cols = (year, user_id, language)
 
         // reduce to only unique rows of the form (user_id, language, year)
-        val userLanguageActivityDF_reduced = userLanguageActivityDF.distinct()
+        val userLanguageActivityDF_reduced = userLanguageActivityDF.distinct()  // rows = 31074191
 
         // aggregate count of num_users per language per year
-        val numUsers = userLanguageActivityDF_reduced.groupBy("year", "language").agg(count("user_id") as "num_users").sort(desc("num_users"))
+        val numUsers = userLanguageActivityDF_reduced.groupBy("year", "language").agg(count("user_id") as "num_users").sort(desc("num_users"))  // rows = 630, cols = (year, language, num_users)
 
         // save computed data to hdfs
         numUsers.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)
@@ -193,8 +172,6 @@ object AnalyzeGithub {
         val languagesDF = spark.read.format("csv").schema(languagesSchema).load(basePath + "languages_list.csv")
         val pullRequestsDF = spark.read.format("csv").schema(pullRequestsSchema).load(basePath + "pull_requests.csv").drop("head_repo_id").drop("head_commit_id").drop("base_commit_id").drop("pull_request_id").withColumn("pull_request_id", col("id")).drop("id").withColumn("project_id", col("base_repo_id")).drop("base_repo_id")
         val pullRequestHistoryDF = spark.read.format("csv").schema(pullRequestsHistorySchema).load(basePath + "pull_request_history.csv")
-        // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year")
-        //     .withColumn("project_id", col("id")).drop("id").join(languagesDF, Seq("language"), "left_anti")
         
         pullRequestsDF.cache()
         pullRequestHistoryDF.cache()
@@ -203,7 +180,7 @@ object AnalyzeGithub {
         val pullRequestHistoryDF_filtered = pullRequestHistoryDF.filter(pullRequestHistoryDF("action") === "opened").drop("action")  // only looking at pull request open event
         val prJoinedDF = pullRequestHistoryDF_filtered.join(pullRequestsDF, "pull_request_id")
         val joinedDF = prJoinedDF.join(projectsDF, "project_id")
-        val numPullRequest = joinedDF.groupBy("year", "language").agg(count("id") as "num_pull_requests").sort(desc("num_pull_requests"))
+        val numPullRequest = joinedDF.groupBy("year", "language").agg(count("id") as "num_pull_requests").sort(desc("num_pull_requests"))   // rows = 478
 
         // save computed data to hdfs
         numPullRequest.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName)   
@@ -217,8 +194,6 @@ object AnalyzeGithub {
             .filter(col("year") >= 2007 && col("year") <= 2019)
         val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
             .drop("year").filter(col("year") >= 2007 && col("year") <= 2019)
-        // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year")
-        //     .withColumn("project_id", col("id")).drop("id").join(languagesDF, Seq("language"), "left_anti")
 
         issuesDF.cache()
         projectsDF.cache()
@@ -233,7 +208,7 @@ object AnalyzeGithub {
         // join with project to link issue with language
         val joinedPendingIssuesDF = pendingIssuesDF.join(projectsDF, "project_id").drop("project_id")
         val joinedPendingIssuesDF_distinct = joinedPendingIssuesDF.distinct()
-        val numPendingIssues = joinedPendingIssuesDF_distinct.groupBy("year", "language").agg(count("issue_id") as "num_pending_issues").sort(desc("num_pending_issues"))
+        val numPendingIssues = joinedPendingIssuesDF_distinct.groupBy("year", "language").agg(count("issue_id") as "num_pending_issues").sort(desc("num_pending_issues"))   // rows = 527
 
         // save computed data to hdfs
         numPendingIssues.coalesce(1).write.format("csv").mode("overwrite").option("header", "true").save(baseSavePath + outFileName) 
@@ -263,10 +238,8 @@ object AnalyzeGithub {
 
         val languages = spark.sparkContext.textFile(basePath + "languages_list.csv")
         val languages_array = languages.collect().toList
-        val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year")
-            .withColumn("project_id", col("id")).drop("id").filter(col("language").isin(languages_array:_*))
-        val projectsDF_withYear = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id")
-            .withColumn("project_id", col("id")).drop("id").filter(col("language").isin(languages_array:_*))
+        val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year").withColumn("project_id", col("id")).drop("id").filter(col("language").isin(languages_array:_*))
+        val projectsDF_withYear = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").withColumn("project_id", col("id")).drop("id").filter(col("language").isin(languages_array:_*))
 
         // val usersDF = spark.read.format("csv").schema(usersSchema).load(basePath + "users.csv")
         // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
@@ -278,11 +251,11 @@ object AnalyzeGithub {
         // val issueEventsDF = spark.read.format("csv").schema(issueEventsSchema).load(basePath + "issue_events.csv")
         // val languagesDF = spark.read.format("csv").schema(languagesSchema).load(basePath + "languages_list.csv")
 
-        // computeLanguageList(spark, "languages_list.csv")
-        // computeNumProjects(spark, "time_num_projects.csv", projectsDF_withYear)
-        // computeNumCommits(spark, "time_num_commits.csv", projectsDF)
-        // computeNumUsers(spark, "time_num_users.csv", projectsDF)
-        // computeNumPullRequests(spark, "time_num_pull_req.csv", projectsDF)
+        computeLanguageList(spark, "languages_list.csv")
+        computeNumProjects(spark, "time_num_projects.csv", projectsDF_withYear)
+        computeNumCommits(spark, "time_num_commits.csv", projectsDF)
+        computeNumUsers(spark, "time_num_users.csv", projectsDF)
+        computeNumPullRequests(spark, "time_num_pull_req.csv", projectsDF)
         computeNumPendingIssues(spark, "time_num_pending_issues.csv", projectsDF)
         computeFinalMetrics(spark, "github_final_metrics.csv")
     }
