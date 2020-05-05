@@ -34,8 +34,8 @@ object AnalyzeStackOverflow {
     private def computeFinalMetrics(spark: SparkSession, outFileName: String): Unit = {
         //read the etl file 
         var df = spark.read.format("csv").schema(postsSchema).load(basePath + "posts.csv")
-        df.withColumnRenamed("_CreationYear","year")
-        df.withColumnRenamed("_Tag","language")
+        df = df.withColumnRenamed("_CreationYear","year")
+        df = df.withColumnRenamed("_Tag","language")
         df = df.withColumn("response_time", datediff(df("_ClosedDate"), df("_CreationDate"))/3600)
         
         val questionsDF = df.filter(df("_PostTypeId") === 1)
