@@ -19,6 +19,7 @@ object AnalyzeStackOverflow {
     val baseSavePath: String = "project/data/analysis/"
 
     val postsSchema = StructType(Array(
+        StructField("_AnswerCount", IntegerType, true)
         StructField("_ClosedDate", TimestampType, true), 
         StructField("_CreationDate", TimestampType, true), 
         StructField("_Id", IntegerType, true),
@@ -27,7 +28,6 @@ object AnalyzeStackOverflow {
         StructField("_Score", IntegerType, true),
         StructField("_Tag", StringType, true), 
         StructField("_CreationYear", IntegerType, true), 
-        StructField("_AnswerCount", IntegerType, true)
     )) 
     
     // join individual metrics computed in seperate functions into one df
