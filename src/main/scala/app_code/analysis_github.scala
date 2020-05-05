@@ -238,8 +238,8 @@ object AnalyzeGithub {
 
         val languages = spark.sparkContext.textFile(basePath + "languages_list.csv")
         val languages_array = languages.collect().toList
-        val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year").withColumn("project_id", col("id")).drop("id").filter(col("language").isin(languages_array:_*))
-        val projectsDF_withYear = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").withColumn("project_id", col("id")).drop("id").filter(col("language").isin(languages_array:_*))
+        val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").drop("year").withColumn("project_id", col("id")).drop("id")//.filter(col("language").isin(languages_array:_*))
+        val projectsDF_withYear = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv").drop("owner_id").withColumn("project_id", col("id")).drop("id")//.filter(col("language").isin(languages_array:_*))
 
         // val usersDF = spark.read.format("csv").schema(usersSchema).load(basePath + "users.csv")
         // val projectsDF = spark.read.format("csv").schema(projectsSchema).load(basePath + "projects.csv")
