@@ -197,12 +197,13 @@ object TransformGithubRaw {
         .appName("TransformGithubRaw")
         .getOrCreate()
         
-        // transformUsersData(spark)
-        // transformProjectsData(spark)
-        // transformProjectLangData(spark)
-        // transformPullRequestData(spark)
-        // transformCommitsData(spark)
-        // transformPullRequestHistoryData(spark)
+        // perform data cleaning (etl) one table (csv file) at a time
+        transformUsersData(spark)
+        transformProjectsData(spark)
+        transformProjectLangData(spark)
+        transformPullRequestData(spark)
+        transformCommitsData(spark)
+        transformPullRequestHistoryData(spark)
         transformIssuesData(spark)
         transformIssueEventsData(spark)
     }
