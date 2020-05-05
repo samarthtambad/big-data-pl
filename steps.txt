@@ -32,6 +32,6 @@ spark2-submit --name "SAM_ETL_12" --class etl.TransformGithubRaw --master yarn -
 spark2-submit --name "SAM_PROFILE_10" --class profile.ProfileGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
 
 # example - run analysis
-spark2-submit --name "SAM_ANALYZE_16" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+spark2-submit --name "SAM_ANALYZE_17" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
 
 spark2-submit --name "SAM_ANALYZE_14" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 5 target/scala-2.11/big-data-pl_2.11-1.0.jar

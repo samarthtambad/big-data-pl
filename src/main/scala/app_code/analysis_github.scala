@@ -267,9 +267,9 @@ object AnalyzeGithub {
 
 
         // computeNumProjects(spark, "time_num_projects.csv")
-        computeNumCommits(spark, "time_num_commits.csv")
-        // computeNumUsers(spark, "time_num_users.csv")
-        // computeNumPullRequests(spark, "time_num_pull_req.csv")
+        // computeNumCommits(spark, "time_num_commits.csv")
+        computeNumUsers(spark, "time_num_users.csv")
+        computeNumPullRequests(spark, "time_num_pull_req.csv")
         // computeNumPendingIssues(spark, "time_num_pending_issues.csv")
         // computeFinalMetrics(spark, "github_final_metrics.csv")
     }
