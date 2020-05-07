@@ -55,7 +55,10 @@ object AnalyzeStackOverflow {
 
         val totalScore = df.groupBy("year", "language").agg(sum("_Score") as "so_total_score").sort(desc("so_total_score"))
 
-        val unansweredQuestionsDF = questionsDF.filter(questionsDF.col("_ClosedDate").isNull)
+        //val unansweredQuestionsDF = questionsDF.filter(questionsDF.col("_ClosedDate").isNull)
+        //val unansweredQuestions = df.groupBy("year", "language").agg(count("year") as "so_unanswered_questions").sort(desc("so_unanswered_questions"))
+
+        val unansweredQuestionsDF = questionsDF.filter(questionsDF("_AnswerCount" === 0))
         val unansweredQuestions = df.groupBy("year", "language").agg(count("year") as "so_unanswered_questions").sort(desc("so_unanswered_questions"))
 
         val averageResponseTime = df.groupBy("year", "language").agg(avg("response_time") as "so_avg_response_time").sort(desc("so_avg_response_time"))
