@@ -1,4 +1,10 @@
-# Big Data Application Project
+
+<h1> Big Data Application Project
+<a href="https://arxiv.org/pdf/2006.01351.pdf">
+    <img align="right" src="https://img.shields.io/badge/arXiv-2006.01351-blue" class="build-status" alt="build status">
+</a>
+</h1>
+
 Analysis of the community friendliness of a programming language from Github and StackOverflow data
 
 ## Data Sources
