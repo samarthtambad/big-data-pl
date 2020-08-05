@@ -3,7 +3,7 @@
 <a href="https://arxiv.org/pdf/2006.01351.pdf">
     <img align="right" src="https://img.shields.io/badge/arXiv-2006.01351-blue" class="build-status" alt="build status">
 </a>
-<span style="float:right; padding-right:10px; width: 5px">&nbsp;</span>
+<span style="float:right; padding-right:10px;">&nbsp;</span>
 <a href="https://public.tableau.com/profile/samarth.tambad#!/vizhome/ProgrammingLanguagesAnalysis/Dashboard1">
     <img align="right" src="https://img.shields.io/badge/visualization-Tableu-blue" class="build-status" alt="build status">
 </a>
