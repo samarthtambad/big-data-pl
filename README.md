@@ -1,8 +1,15 @@
-# Big Data Application Project
-#### Team: Samarth Tambad (svt258) and Rohit Nandwani (rhn235)
-#### Title: Github and StackOverflow: Analyzing tradeoffs among programming languages
-#### Repository: https://github.com/samarthtambad/big-data-pl
-(Private for now, can make it public or grant collaborator permission upon request)
+
+<h1> Big Data Application Project
+<a href="https://arxiv.org/pdf/2006.01351.pdf">
+    <img align="right" src="https://img.shields.io/badge/arXiv-2006.01351-blue" class="build-status" alt="build status">
+</a>
+<span style="float:right; padding-right:10px;">&nbsp;</span>
+<a href="https://public.tableau.com/profile/samarth.tambad#!/vizhome/ProgrammingLanguagesAnalysis/Dashboard1">
+    <img align="right" src="https://img.shields.io/badge/visualization-Tableu-blue" class="build-status" alt="build status">
+</a>
+</h1>
+
+Analysis of the community friendliness of a programming language from Github and StackOverflow data
 
 ## Data Sources
 The following data was downloaded into HDFS as part of ingestion process:
