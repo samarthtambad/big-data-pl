@@ -1,17 +1,31 @@
 # Big Data Application Project
-Analysis of the community friendliness of a programming language from Github and StackOverflow data
+#### Team: Samarth Tambad (svt258) and Rohit Nandwani (rhn235)
+#### Title: Github and StackOverflow: Analyzing tradeoffs among programming languages
+#### Repository: https://github.com/samarthtambad/big-data-pl
+(Private for now, can make it public or grant collaborator permission upon request)
 
 ## Data Sources
+The following data was downloaded into HDFS as part of ingestion process:
 
-### Github
+#### 1. Github
 Size: 102 GB \
-https://ghtorrent.org/ \
-More info [here](docs/README.md)
+Source: https://ghtorrent.org/
+##### Data Locations on HDFS
+Starting from root directory of user svt258 \
+```Raw```: project/data/raw/data \
+```Cleaned```: project/data/cleaned \
+```Profiling```: project/data/stats \
+```Analytics```: project/data/analysis
 
-### StackOverflow
+#### 2. StackOverflow
 Size: 120 GB \
-https://archive.org/details/stackexchange \
-More info [here](docs/README.md)
+Source: https://archive.org/details/stackexchange
+##### Data Locations on HDFS
+Starting from root directory of user rhn235 \
+```Raw```: project/data/raw/data \
+```Cleaned```: project/data/cleaned \
+```Profiling```: project/data/stats \
+```Analytics```: project/data/analysis
 
 ## File Structure
 ```
@@ -20,12 +34,22 @@ More info [here](docs/README.md)
 ├── data
 │   ├── github_final_metrics.csv
 │   └── stackoverflow_final_metrics.csv
+├── project
+│   ├── build.properties
+│   └── target
+│       ├── config-classes
+│       ├── scala-2.12
+│       └── streams
+├── README.md
+├── screenshots
 ├── src
 │   └── main
 │       └── scala
 │           ├── app_code
 │           │   ├── analysis_github.scala
 │           │   └── analysis_stackoverflow.scala
+│           ├── data_ingest
+│           │   └── ingest.txt
 │           ├── etl_code
 │           │   ├── etl_github.scala
 │           │   └── etl_stackoverflow.scala
@@ -34,20 +58,99 @@ More info [here](docs/README.md)
 │           │   └── profile_stackoverflow.scala
 │           └── test_code
 │               └── test.scala
-├── steps.txt
-├── README.md
-└── visualization
-    ├── final.twb
-    └── github_final_metrics+.hyper
+└── target
+    ├── scala-2.11
+    │   ├── big-data-pl_2.11-1.0.jar
+    │   ├── classes
+    │   └── update
+    └── streams
 ```
 The ```data``` folder contains the final computed metrics each for GitHub and StackOverflow.
+The compiled ```jar``` file can be found at location ```target/scala-2.11/```.
 
 ## Steps to run
-1. [steps](usage.md)
+Starting at the root of the project folder, perform the following steps to run the application.
 
-http://babar.es.its.nyu.edu:8088/cluster
+### Load modules
+```
+module load spark/2.4.0
+module load git/1.8.3.1
+module load sbt/1.2.8
+module load scala/2.11.8
+```
 
-## References
-1. https://en.wikipedia.org/wiki/Measuring_programming_language_popularity
-2. https://github.blog/2015-08-19-language-trends-on-github/
-3. 
+### Compile project
+``` 
+sbt compile
+```
+Once finished, the compiled classes will be saved to ```target/scala-2.11/classes``` directory.
+
+### Package into a jar file
+```
+sbt package
+```
+Once finished, the compiled jar file named ```big-data-pl_2.11-1.0.jar``` will be saved to ```target/scala-2.11/``` directory.
+
+### Submitting jobs to cluster
+```
+spark2-submit --name "<your job name>" --class <your main class> --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/<your JAR>.jar
+```
+
+### Running spark-shell in with configurable memory and executors
+```
+spark2-shell --name "<your job name>"" --master yarn --deploy-mode client --verbose --driver-memory 5G --executor-memory 2G --num-executors 20
+```
+
+# Examples
+
+## 1. Running test job
+```
+spark2-submit --name "TEST" --class test.Test --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 10 target/scala-2.11/big-data-pl_2.11-1.0.jar
+```
+A random job just to test is spark-submit is working.
+
+## 2. Run jobs for Github data
+#### ETL
+```
+spark2-submit --name "GH_ETL" --class etl.TransformGithubRaw --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+```
+Reads data from the ```Raw``` data path in HDFS (as listed above) and stores cleaned data into the ```Cleaned``` data path.
+
+#### Profiling
+```
+spark2-submit --name "GH_PROFILE" --class profile.ProfileGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+```
+Reads data from the ```Cleaned``` data path in HDFS (as listed above) and stores tables generated with profiling info into the ```Profiling``` data path.
+
+#### Analysis
+```
+spark2-submit --name "GH_ANALYZE" --class analysis.AnalyzeGithub --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+```
+Reads data from the ```Cleaned``` data path in HDFS (as listed above) and stores the computed metrics data into the ```Analytics``` data path.
+
+## 3. Run jobs for StackOverflow data
+#### ETL
+```
+spark2-submit --packages com.databricks:spark-xml_2.11:0.9.0 --name "SO_ETL" --class etl.TransformStackOverflowRaw --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+```
+Reads data from the ```Raw``` data path in HDFS (as listed above) and stores cleaned data into the ```Cleaned``` data path.
+
+#### Profiling
+```
+spark2-submit --packages com.databricks:spark-xml_2.11:0.9.0 --name "SO_PROFILE" --class etl.ProfileStackOverflow --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+```
+Reads data from the ```Cleaned``` data path in HDFS (as listed above) and stores tables generated with profiling info into the ```Profiling``` data path.
+
+#### Analysis
+```
+spark2-submit --packages com.databricks:spark-xml_2.11:0.9.0 --name "SO_ANALYZE" --class etl.AnalyzeStackOverflow --master yarn --deploy-mode cluster --verbose --driver-memory 5G --executor-memory 2G --num-executors 20 target/scala-2.11/big-data-pl_2.11-1.0.jar
+```
+Reads data from the ```Cleaned``` data path in HDFS (as listed above) and stores the computed metrics data into the ```Analytics``` data path.
+
+# Configuration
+```
+scala - 2.11.8
+spark - 2.3.0.cloudera4
+# Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_162
+Cluster UI: http://babar.es.its.nyu.edu:8088/cluster
+```
